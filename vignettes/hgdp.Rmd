@@ -1,0 +1,77 @@
+<!--
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{SNPClust applied to Europeans}
+-->
+
+# SNPClust call
+
+The snpclust_hgdp function is a wrapper to the snpclust function with specific code for the formatting of the Human Genome Diversity Project dataset.
+Only a small subset of the data is used here, 157 samples out of 940 and 5,000 SNPs out of 660,918.
+
+
+```{r, message = FALSE, warning = FALSE}
+suppressPackageStartupMessages(library(snpclust))
+dir <- system.file('extdata', package = 'snpclust')
+hgdp <- snpclust_hgdp(dir)
+gds_path <- file.path(dir, 'hgdp.gds')
+gdata <- load_gds_as_genotype_data(gds_path)
+on.exit(file.remove(gds_path))
+```
+
+# Quality control
+
+Details about the number of patients and SNPs removed during quality control are stored in a data frame.
+
+```{r, results = 'asis'}
+knitr::kable(hgdp$qc[[1]], 'markdown')
+```
+
+# Principal Component Analysis (PCA)
+
+The results of PCA applied to the quality controlled dataset are stored in a long data frame.
+Here we see that samples are grouped by country of origin.
+
+```{r}
+df_pca <- hgdp$pca[[1]]
+groups <- 'population'
+ggplot_pca(df_pca, groups, ellipses = TRUE)
+
+plot_pca_pairs(1:3, df_pca, groups)
+plot_pca_pairs(4:6, df_pca, groups)
+```
+
+# SNPs contributions to Principal Components (PCs)
+
+For each PC, the absolute SNP contributions are displayed.
+Here we applied PCA only a subset of 5,000 SNPs out of 660,918.
+When PCA is applied on all the SNPs, we can see a strong localized contribution from chromosome 8 in the 11th principal component.
+
+```{r}
+df_vars <- subset(df_pca, PCA_VARTYPE == 'VAR')
+on.exit(GWASTools::close(gdata))
+ggplot_manhat(df_vars, gdata, 1:10, ncol = 5) 
+```
+
+# SNPs selection by Gaussian mixture models
+
+The Gaussian mixture models select SNPs above the background noise of other SNPs contributions.
+Here the selected SNPs are colored in red.
+
+```{r}
+var_ids <- as.numeric(gsub('VAR_', '', df_vars$PCA_VARNAME))
+chromosomes <- gdata@snpAnnot@data[var_ids, 'chromosome']
+df_vars <- abs(df_vars[1:10])
+l_peaks <- peak_selection(df_vars, chromosomes)
+ggplot_selection(l_peaks, df_vars, ncol = 5, scales = 'free_y') 
+```
+
+# PCA on the SNPClust selected dataset
+
+When PCA is applied on the SNPClust selected dataset, samples are not grouped by geographic origin anymore.
+
+```{r}
+df_pca_feats <- hgdp$df_pca_feats
+ggplot_pca(hgdp$df_pca_feats, groups, ellipses = TRUE)
+plot_pca_pairs(1:3, df_pca_feats, groups)
+plot_pca_pairs(4:6, df_pca_feats, groups)
+```

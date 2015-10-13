@@ -1,0 +1,158 @@
+hgdp_id	Gender	population	Geographic origin	Region
+HGDP00511	M	French	France	Europe
+HGDP00512	M	French	France	Europe
+HGDP00513	F	French	France	Europe
+HGDP00514	F	French	France	Europe
+HGDP00515	M	French	France	Europe
+HGDP00516	F	French	France	Europe
+HGDP00517	F	French	France	Europe
+HGDP00518	M	French	France	Europe
+HGDP00519	M	French	France	Europe
+HGDP00520	F	French	France	Europe
+HGDP00521	M	French	France	Europe
+HGDP00522	M	French	France	Europe
+HGDP00523	F	French	France	Europe
+HGDP00524	F	French	France	Europe
+HGDP00525	M	French	France	Europe
+HGDP00526	F	French	France	Europe
+HGDP00527	F	French	France	Europe
+HGDP00528	M	French	France	Europe
+HGDP00529	F	French	France	Europe
+HGDP00530	M	French	France	Europe
+HGDP00531	F	French	France	Europe
+HGDP00533	M	French	France	Europe
+HGDP00534	F	French	France	Europe
+HGDP00535	F	French	France	Europe
+HGDP00536	F	French	France	Europe
+HGDP00537	F	French	France	Europe
+HGDP00538	M	French	France	Europe
+HGDP00539	F	French	France	Europe
+HGDP00665	M	Sardinian	Italy	Europe
+HGDP00666	M	Sardinian	Italy	Europe
+HGDP00667	F	Sardinian	Italy	Europe
+HGDP00668	M	Sardinian	Italy	Europe
+HGDP00669	F	Sardinian	Italy	Europe
+HGDP00670	M	Sardinian	Italy	Europe
+HGDP00671	M	Sardinian	Italy	Europe
+HGDP00672	F	Sardinian	Italy	Europe
+HGDP00673	F	Sardinian	Italy	Europe
+HGDP00674	M	Sardinian	Italy	Europe
+HGDP00794	F	Orcadian	Orkney Islands	Europe
+HGDP00795	M	Orcadian	Orkney Islands	Europe
+HGDP00796	F	Orcadian	Orkney Islands	Europe
+HGDP00797	F	Orcadian	Orkney Islands	Europe
+HGDP00798	M	Orcadian	Orkney Islands	Europe
+HGDP00799	F	Orcadian	Orkney Islands	Europe
+HGDP00800	F	Orcadian	Orkney Islands	Europe
+HGDP00802	F	Orcadian	Orkney Islands	Europe
+HGDP00803	M	Orcadian	Orkney Islands	Europe
+HGDP00804	M	Orcadian	Orkney Islands	Europe
+HGDP00805	F	Orcadian	Orkney Islands	Europe
+HGDP00806	F	Orcadian	Orkney Islands	Europe
+HGDP00807	M	Orcadian	Orkney Islands	Europe
+HGDP00808	M	Orcadian	Orkney Islands	Europe
+HGDP00810	M	Orcadian	Orkney Islands	Europe
+HGDP00879	M	Russian	Russia	Europe
+HGDP00880	M	Russian	Russia	Europe
+HGDP00881	F	Russian	Russia	Europe
+HGDP00882	M	Russian	Russia	Europe
+HGDP00883	M	Russian	Russia	Europe
+HGDP00884	F	Russian	Russia	Europe
+HGDP00885	F	Russian	Russia	Europe
+HGDP00886	M	Russian	Russia	Europe
+HGDP00887	M	Russian	Russia	Europe
+HGDP00888	M	Russian	Russia	Europe
+HGDP00889	F	Russian	Russia	Europe
+HGDP00890	M	Russian	Russia	Europe
+HGDP00891	M	Russian	Russia	Europe
+HGDP00892	M	Russian	Russia	Europe
+HGDP00893	M	Russian	Russia	Europe
+HGDP00894	M	Russian	Russia	Europe
+HGDP00895	M	Russian	Russia	Europe
+HGDP00896	M	Russian	Russia	Europe
+HGDP00897	M	Russian	Russia	Europe
+HGDP00898	F	Russian	Russia	Europe
+HGDP00899	F	Russian	Russia	Europe
+HGDP00900	M	Russian	Russia	Europe
+HGDP00901	F	Russian	Russia	Europe
+HGDP00902	F	Russian	Russia	Europe
+HGDP00903	F	Russian	Russia	Europe
+HGDP01062	F	Sardinian	Italy	Europe
+HGDP01063	M	Sardinian	Italy	Europe
+HGDP01064	F	Sardinian	Italy	Europe
+HGDP01065	F	Sardinian	Italy	Europe
+HGDP01066	M	Sardinian	Italy	Europe
+HGDP01067	M	Sardinian	Italy	Europe
+HGDP01068	F	Sardinian	Italy	Europe
+HGDP01069	M	Sardinian	Italy	Europe
+HGDP01070	F	Sardinian	Italy	Europe
+HGDP01071	M	Sardinian	Italy	Europe
+HGDP01072	F	Sardinian	Italy	Europe
+HGDP01073	M	Sardinian	Italy	Europe
+HGDP01074	F	Sardinian	Italy	Europe
+HGDP01075	M	Sardinian	Italy	Europe
+HGDP01076	M	Sardinian	Italy	Europe
+HGDP01077	M	Sardinian	Italy	Europe
+HGDP01078	F	Sardinian	Italy	Europe
+HGDP01079	M	Sardinian	Italy	Europe
+HGDP01147	M	North_Italian	Italy (Bergamo)	Europe
+HGDP01151	M	North_Italian	Italy (Bergamo)	Europe
+HGDP01152	M	North_Italian	Italy (Bergamo)	Europe
+HGDP01153	M	North_Italian	Italy (Bergamo)	Europe
+HGDP01155	M	North_Italian	Italy (Bergamo)	Europe
+HGDP01156	F	North_Italian	Italy (Bergamo)	Europe
+HGDP01157	F	North_Italian	Italy (Bergamo)	Europe
+HGDP01161	M	Tuscan	Italy	Europe
+HGDP01162	M	Tuscan	Italy	Europe
+HGDP01163	M	Tuscan	Italy	Europe
+HGDP01164	M	Tuscan	Italy	Europe
+HGDP01166	M	Tuscan	Italy	Europe
+HGDP01167	M	Tuscan	Italy	Europe
+HGDP01168	F	Tuscan	Italy	Europe
+HGDP01169	F	Tuscan	Italy	Europe
+HGDP01171	F	North_Italian	Italy (Bergamo)	Europe
+HGDP01172	F	North_Italian	Italy (Bergamo)	Europe
+HGDP01173	M	North_Italian	Italy (Bergamo)	Europe
+HGDP01174	M	North_Italian	Italy (Bergamo)	Europe
+HGDP01177	F	North_Italian	Italy (Bergamo)	Europe
+HGDP01357	M	French_Basque	France	Europe
+HGDP01358	M	French_Basque	France	Europe
+HGDP01359	M	French_Basque	France	Europe
+HGDP01360	M	French_Basque	France	Europe
+HGDP01361	M	French_Basque	France	Europe
+HGDP01362	M	French_Basque	France	Europe
+HGDP01363	F	French_Basque	France	Europe
+HGDP01364	M	French_Basque	France	Europe
+HGDP01365	F	French_Basque	France	Europe
+HGDP01366	F	French_Basque	France	Europe
+HGDP01367	F	French_Basque	France	Europe
+HGDP01368	F	French_Basque	France	Europe
+HGDP01369	F	French_Basque	France	Europe
+HGDP01370	M	French_Basque	France	Europe
+HGDP01371	M	French_Basque	France	Europe
+HGDP01372	M	French_Basque	France	Europe
+HGDP01373	F	French_Basque	France	Europe
+HGDP01374	M	French_Basque	France	Europe
+HGDP01375	M	French_Basque	France	Europe
+HGDP01376	M	French_Basque	France	Europe
+HGDP01377	M	French_Basque	France	Europe
+HGDP01378	M	French_Basque	France	Europe
+HGDP01379	M	French_Basque	France	Europe
+HGDP01380	F	French_Basque	France	Europe
+HGDP01381	F	Adygei	Russia Caucasus	Europe
+HGDP01382	F	Adygei	Russia Caucasus	Europe
+HGDP01383	M	Adygei	Russia Caucasus	Europe
+HGDP01384	F	Adygei	Russia Caucasus	Europe
+HGDP01385	M	Adygei	Russia Caucasus	Europe
+HGDP01386	F	Adygei	Russia Caucasus	Europe
+HGDP01387	F	Adygei	Russia Caucasus	Europe
+HGDP01388	F	Adygei	Russia Caucasus	Europe
+HGDP01396	M	Adygei	Russia Caucasus	Europe
+HGDP01397	M	Adygei	Russia Caucasus	Europe
+HGDP01398	F	Adygei	Russia Caucasus	Europe
+HGDP01399	F	Adygei	Russia Caucasus	Europe
+HGDP01400	F	Adygei	Russia Caucasus	Europe
+HGDP01401	F	Adygei	Russia Caucasus	Europe
+HGDP01402	M	Adygei	Russia Caucasus	Europe
+HGDP01403	M	Adygei	Russia Caucasus	Europe
+HGDP01404	M	Adygei	Russia Caucasus	Europe
