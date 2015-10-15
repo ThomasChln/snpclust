@@ -10,10 +10,10 @@ The R package **snpclust** performs unsupervised feature selection and summariza
 
 ## Installation
 
-SNPClust is an R package that requires the PLINK and SHAPEIT softwares.
-You can use the **devtools** R package to install the development version from Github:
-
+SNPClust is an [R](https://cran.rstudio.com/) package that requires the softwares [PLINK](http://pngu.mgh.harvard.edu/~purcell/plink/download.shtml) and [SHAPEIT](https://mathgen.stats.ox.ac.uk/genetics_software/shapeit/shapeit.html#download).
+Once they are installed, you can open R and use the **devtools** R package to install the development version from Github:
 ```r
+if (!require(devtools)) install.packages('devtools')
 devtools::install_github('ThomasChln/snpclust', build_vignettes = TRUE)
 ```
 
