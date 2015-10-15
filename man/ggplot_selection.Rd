@@ -4,13 +4,19 @@
 \alias{ggplot_selection}
 \title{ggplot_selection}
 \usage{
-ggplot_selection(l_peaks, df_vars, ..., n_points = 2000)
+ggplot_selection(l_peaks, df_pca, axes = paste0("PC", 1:10), ncol = 5,
+  scales = "free_y", ..., n_points = 2000)
 }
 \arguments{
 \item{l_peaks}{List returned by peak_selection}
 
-\item{df_vars}{Data frame of variable contributions with columns
-PCA_VARNAME and PC{axes}}
+\item{df_pca}{QB_pcafort data frame, requires variable contributions}
+
+\item{axes}{Axes to plot}
+
+\item{ncol}{ggplot2::facet_wrap}
+
+\item{scales}{ggplot2::facet_wrap}
 
 \item{...}{Passed to ggplot2::facet_wrap}
 

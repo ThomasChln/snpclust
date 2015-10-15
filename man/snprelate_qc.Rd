@@ -20,7 +20,7 @@ snprelate_qc(gdata, sample_nas = 0.03, snp_nas = 0.01, maf = 0.05,
 
 \item{ibs}{Identity by state threshold}
 
-\item{n_cores}{Number of cores to use (default detected)}
+\item{n_cores}{Number of cores to use}
 }
 \value{
 list of gdata and QC data frame

@@ -3,15 +3,25 @@
 #' ggplot_selection
 #'
 #' @param l_peaks List returned by peak_selection
+#' @param df_pca     QB_pcafort data frame, requires variable contributions
+#                    with columns PCA_VARNAME and axes
+#' @param axes       Axes to plot
+#' @param ncol    ggplot2::facet_wrap
+#' @param scales  ggplot2::facet_wrap
 #' @param ...     Passed to ggplot2::facet_wrap
-#' @inheritParams ggplot_manhat
+#' @param n_points   Maximum number of largest values to plot, for each
+#'                   principal component
 #' @return ggplot
 #' @export
-ggplot_selection <- function(l_peaks, df_vars, ..., n_points = 2e3) {
-  peaks_axes_idxs <- as.numeric(gsub('PC', '', names(l_peaks)))
+ggplot_selection <- function(l_peaks, df_pca, axes = paste0('PC', 1:10),
+  ncol = 5, scales = 'free_y', ..., n_points = 2e3) {
+
+  PCA_VARTYPE <- NULL
+  df_vars <- abs(subset(df_pca, PCA_VARTYPE == 'VAR')[axes])
+  l_peaks <- l_peaks[names(l_peaks) %in% axes]
   l_peaks_vars <- lapply(seq_along(l_peaks), function(idx) {
-      peaks_axes_idx <- peaks_axes_idxs[idx]
-      list(peaks_axes_idx, l_peaks[[idx]], df_vars[peaks_axes_idx])
+      axe <- names(l_peaks)[idx]
+      list(axe, l_peaks[[idx]], df_vars[axe])
     })
   l_contribs <- lapply(l_peaks_vars, .ggplot_selection, n_points)
   df_vars <- data.frame(do.call(rbind, l_contribs))
@@ -19,7 +29,7 @@ ggplot_selection <- function(l_peaks, df_vars, ..., n_points = 2e3) {
   df_vars$peak_id <- factor(df_vars$peak_id, peak_id_lvls)
 
   ggplot(df_vars, aes_string(x = 'x', y = 'pc', color = 'sel')) + geom_point() +
-    facet_wrap(~ peak_id, ...) +
+    facet_wrap(~ peak_id, ncol = ncol, ...) +
     theme(panel.background = element_blank(), panel.grid = element_blank(),
       strip.background = element_blank(), axis.text = element_blank(),
       axis.ticks = element_blank(), legend.position = 'none') +
@@ -38,34 +48,31 @@ ggplot_selection <- function(l_peaks, df_vars, ..., n_points = 2e3) {
   df_vars <- subset(df_vars, pc > threshold)
   seq_vars <- seq_len(nrow(df_vars))
 
-  cbind(df_vars, peak_id = paste0('PC', peaks_vars[[1]]), x = seq_vars,
+  cbind(df_vars, peak_id = peaks_vars[[1]], x = seq_vars,
     stringsAsFactors = FALSE)
 }
 
 ###############################################################################
 #' ggplot_manhat
 #'
-#' @param df_vars    Data frame of variable contributions with columns
-#'                   PCA_VARNAME and PC{axes}
 #' @param gdata      GenotypeData object with snpIDs matching df_vars column
 #'                   PCA_VARNAME
-#' @param axes       Axes to plot
 #' @param byposition Plot the SNPs by chromosome and poistion or by index
-#' @param n_points   Maximum number of largest values to plot, for each
-#'                   principal component
-#' @param ...        Passed to ggplot2::facet_wrap
+#' @inheritParams ggplot_selection
 #' @return ggplot
 #' @export
-ggplot_manhat <- function(df_vars, gdata, axes = 1:9, byposition = TRUE,
-  n_points = 2e3, ...) {
+ggplot_manhat <- function(df_pca, gdata, axes = paste0('PC', 1:10),
+  byposition = TRUE, n_points = 2e3, ncol = 5, ...) {
+
+  PCA_VARTYPE <- NULL
+  df_vars <- subset(df_pca, PCA_VARTYPE == 'VAR')
   ids <- as.numeric(gsub('VAR_', '', df_vars$PCA_VARNAME))
   snpvars <- c('chromosome', 'position', 'probe_id')
   df_snps <- gdata@snpAnnot@data
   df_snps <- df_snps[match(ids, df_snps$snpID), snpvars]
   if (!byposition) df_snps$position <- seq_along(df_snps$position)
   seq_size <- seq_len(min(n_points, nrow(df_vars)))
-  axes_names <- paste0('PC', axes)
-  df_snps <- plyr::ldply(axes_names, function(axe) {
+  df_snps <- plyr::ldply(axes, function(axe) {
       var_contrib <- abs(df_vars[[axe]])
       # select only first with seq_size
       ord_vars <- order(var_contrib, decreasing = TRUE)[seq_size]
@@ -90,13 +97,13 @@ ggplot_manhat <- function(df_vars, gdata, axes = 1:9, byposition = TRUE,
     geom_point() +
     scale_color_discrete(guide = 'none') +
     scale_x_continuous(breaks = ticks, labels = uniq_chrs) +
-    facet_wrap(~ axe, ...) +
+    facet_wrap(~ axe, ncol = ncol, ...) +
     theme(panel.background = element_blank(), panel.grid = element_blank(),
       strip.background = element_blank(), axis.text.x = element_blank(),
       axis.ticks.x = element_blank(), legend.position = 'none') +
     labs(size = '-log10(p-value)',
       x = paste(format(n_points, big.mark = ','),
-        '1% most contributing SNPs by',
+        'most contributing SNPs by',
         if (!byposition) 'index' else 'chromosome and position'),
       y = 'Absolute values of contributions')
 
@@ -302,7 +309,6 @@ all_vars <- c(
 #' @return list of pca ggplots
 #'
 #' @author tcharlon
-#' @export
 get_pca_panels <- function(pcafort, axes = 1:4, groups = NULL, max_vars = 0L,
   ...) {
 
@@ -373,7 +379,6 @@ get_pca_panels <- function(pcafort, axes = 1:4, groups = NULL, max_vars = 0L,
 #' @return Gtable
 #'
 #' @author tcharlon
-#' @export
 grob_pca_panels <- function(plots, only_panels = TRUE, legend = FALSE) {
   stopifnot(inherits(plots, 'list'))
 
@@ -424,11 +429,6 @@ plot_pca_pairs <- function(axes, ..., max_vars = 0L, ellipses = TRUE) {
   plot(grob_pca_panels(ggplts))
 }
 
-#' Reorder dataframe with PCA obs (nas first)
-#' @param df_all_obs sub_df of qbpcafort containing obs
-#' @inheritParams ggplot_pca
-#' @return df
-#' @author tcharlon
 reorder_pcafort <- function(df_all_obs, nas_first, groups) {
 
   if (nas_first && !is.null(groups) && any(is.na(df_all_obs[[groups]]))) {
@@ -439,11 +439,6 @@ reorder_pcafort <- function(df_all_obs, nas_first, groups) {
   df_all_obs
 }
 
-#' Create labels for PCA axes, adding if required pct of explained var
-#' @inheritParams ggplot_pca
-#' @param names_axe names of PCA axes
-#' @return character vector of axis labels
-#' @author tcharlon
 create_pca_axis_labels <- function(qb_pcafort, pc_variance = TRUE, axes,
   names_axe = paste0("PC", axes)) {
 
@@ -507,16 +502,6 @@ stat_ellipse <- function(mapping = NULL, data = NULL, geom = "polygon",
 }
 
 
-#' Draw variables on PC space
-#'
-#' @param data_vars qb_pca object subsetted on PCA_VARTYPE == 'VAR' or 'VAR_SUP'
-#' @param names_axe  name of columns{2} containing PCs to plot
-#' @param circle whether to draw a surrounding circle
-#' @param scale scale of the values
-#' @param scale_sdev Should the values be scaled by the std. dev. of PCs ?
-#' @return list of geoms
-#' @author adicara
-#' @export
 draw_pca_vars <- function(data_vars, names_axe, scale = 1, circle = FALSE,
   scale_sdev = FALSE) {
 
@@ -557,12 +542,6 @@ draw_corr_circle <- function(scale) {
 }
 
 
-#' Scale vars in qbpca to display them
-#' @param df_all_vars df with all variables (subset of qbpcafort)
-#' @param names_axe names of PCA axes
-#' @inheritParams draw_pca_vars
-#' @return df similar to input one but with scaled vars
-#' @author adicara
 scale_pca_vars <- function(df_all_vars, names_axe, scale_sdev = FALSE, scale = 1) {
 
   #fix note during checks

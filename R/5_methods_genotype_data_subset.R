@@ -20,9 +20,6 @@
   actual_idx
 }
 
-#' GenotypeDataSubset wrapper
-#' @inheritParams GWASTools::getSnpID
-#' @export
 setMethod("getSnpID",
   signature(object = "GenotypeDataSubset"),
   function(object, ...) {
@@ -30,72 +27,46 @@ setMethod("getSnpID",
 })
 
 
-#' GenotypeDataSubset wrapper
-#' @inheritParams GWASTools::getPosition
-#' @export
 setMethod("getPosition",
   signature(object = "GenotypeDataSubset"),
   function(object, ...) {
     callNextMethod(object, .actual_snp_indices(object, ...))
   })
 
-#' GenotypeDataSubset wrapper
-#' @inheritParams GWASTools::getChromosome
-#' @export
 setMethod("getChromosome",
   signature(object = "GenotypeDataSubset"),
   function(object, ...) {
     callNextMethod(object, .actual_snp_indices(object, ...))
   })
 
-#' GenotypeDataSubset wrapper
-#' @inheritParams GWASTools::getAlleleA
-#' @export
 setMethod("getAlleleA",
   signature(object = "GenotypeDataSubset"),
   function(object, ...) {
     callNextMethod(object, .actual_snp_indices(object, ...))
   })
 
-#' GenotypeDataSubset wrapper
-#' @inheritParams GWASTools::getAlleleB
-#' @export
 setMethod("getAlleleB",
   signature(object = "GenotypeDataSubset"),
   function(object, ...) {
     callNextMethod(object, .actual_snp_indices(object, ...))
   })
 
-#' GenotypeDataSubset wrapper
-#' @inheritParams GWASTools::getScanID
-#' @export
 setMethod("getScanID",
   signature(object = "GenotypeDataSubset"),
   function(object, ...) {
     callNextMethod(object, .actual_scan_indices(object, ...))
   })
 
-#' GenotypeDataSubset wrapper
-#' @inheritParams GWASTools::nsnp
-#' @export
 setMethod("nsnp", "GenotypeDataSubset",
   function(object) {
     length(object@snps_idx)
   })
 
-#' GenotypeDataSubset wrapper
-#' @inheritParams GWASTools::nscan
-#' @export
 setMethod("nscan", "GenotypeDataSubset",
   function(object) {
     length(object@scans_idx)
   })
 
-#' GenotypeDataSubset wrapper
-#' @inheritParams GWASTools::getGenotype
-#' @param snp snp
-#' @param scan scan
-#' @export
 setMethod("getGenotype",
   signature(object = "GenotypeDataSubset"),
   function(object, snp = NULL, scan = NULL, ...) {
@@ -126,7 +97,6 @@ setMethod("getGenotype",
   })
 
 
-#' @export
 fetch_allele1.GenotypeDataSubset <- function(obj, snps_idx) {
   idx <- if (missing(snps_idx)) obj@snps_idx else obj@snps_idx[snps_idx]
 
@@ -136,7 +106,6 @@ fetch_allele1.GenotypeDataSubset <- function(obj, snps_idx) {
   fetch_allele1(obj, idx)
 }
 
-#' @export
 fetch_allele2.GenotypeDataSubset <- function(obj, snps_idx) {
   idx <- if (missing(snps_idx)) obj@snps_idx else obj@snps_idx[snps_idx]
 

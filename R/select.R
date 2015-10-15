@@ -1,11 +1,4 @@
 
-#' peak_selection
-#'
-#' @inheritParams ggplot_manhat
-#' @inheritParams snpclust 
-#' @param chromosomes Chromosomes of df_vars rows
-#' @return List of snpIDs selected, each slot for each principal component
-#' @export
 peak_selection <- function(df_vars, chromosomes, n_cores = 2) {
   df_abs_vars <- abs(df_vars)
   l_peaks <- lapply(df_abs_vars, .quantile_chromosome_maxs, .6,

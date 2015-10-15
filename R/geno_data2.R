@@ -5,7 +5,7 @@ fetch_hgdp <- function(paths) {
   for (i in 1:2) if (!file.exists(paths[i])) download.file(urls[i], paths[i])
 }
 
-fetch_reduced_hgdp <- function(paths, zippaths, nsnp = 2e3, nscan = 50, only_eu = TRUE) {
+fetch_reduced_hgdp <- function(paths, zippaths, nsnp = 2e3, nscan = -1, only_eu = TRUE) {
   fetch_hgdp(paths)
   if (nsnp == -1 && nscan == -1) return()
   paths <- file.path(getwd(), paths)
@@ -42,27 +42,28 @@ fetch_reduced_hgdp <- function(paths, zippaths, nsnp = 2e3, nscan = 50, only_eu 
   zip(paths[1], zippaths)
 }
 
-# generate gds and bed files
-save_hgdp_as_gds <- function(paths, zippaths) {
-  dir <- dirname(paths[1])
-  txts_paths <- unzip(paths[1], zippaths, exdir = dir, junkpaths = TRUE)
+#' save_hgdp_as_gds
+#' @param paths    Paths of the zip and txt files
+#' @param zippaths Paths of the genotype and snp files in the zip
+#' @return Path of the saved gds file
+#' @export
+save_hgdp_as_gds <- function(
+  paths = file.path(system.file('extdata', package = 'snpclust'),
+    paste0('hgdp.', c('zip', 'txt', 'gds'))),
+  zippaths = paste0('hgdp/', c('HGDP_FinalReport_Forward.txt', 'HGDP_Map.txt'))
+  ) {
+  setup_temp_dir()
+  txts_paths <- unzip(paths[1], zippaths, junkpaths = TRUE)
   actg_gdata <- actg_tsv_to_gdata(txts_paths[1], paths[2],
     c('scan_id', 'gender', 'population', 'geographic_origin', 'region'),
     txts_paths[2])
   file.remove(txts_paths)
   save_genotype_data_as_gds(actg_gdata, paths[3], quiet = TRUE)
+  paths[3]
 }
 
-.gds_to_bedtargz <- function(gds, tarname) {
-  gdsobj <- SNPRelate::snpgdsOpen(gds, FALSE)
-  on.exit(closefn.gds(gdsobj))
-  if (any(grepl('snp[.]allele', capture.output(print(gdsobj))))) {
-    delete.gdsn(index.gdsn(gdsobj, 'snp.allele'))
-  }
-  SNPRelate::snpgdsGDS2BED(gdsobj, tarname, verbose = FALSE)
-}
-
-gds_to_bedtargz <- function(gds, tarpath) {
+###############################################################################
+gds_to_bedtargz <- function(gds, tarpath = gsub('gds$', 'tar.gz', gds)) {
   # get plink files with gds
   tarname <- gsub('[.]tar[.]gz$', '', tarpath)
   .gds_to_bedtargz(gds, tarname)
@@ -80,6 +81,16 @@ gds_to_bedtargz <- function(gds, tarpath) {
   tarcmd <- paste('-czf', tarpath, paste(plink_files, collapse = ' '))
   system2('tar', tarcmd)
   file.remove(plink_files)
+  tarpath
+}
+
+.gds_to_bedtargz <- function(gds, tarname) {
+  gdsobj <- SNPRelate::snpgdsOpen(gds, FALSE)
+  on.exit(closefn.gds(gdsobj))
+  if (any(grepl('snp[.]allele', capture.output(print(gdsobj))))) {
+    delete.gdsn(index.gdsn(gdsobj, 'snp.allele'))
+  }
+  SNPRelate::snpgdsGDS2BED(gdsobj, tarname, verbose = FALSE)
 }
 
 ###############################################################################
@@ -111,7 +122,6 @@ gds_to_bedtargz <- function(gds, tarpath) {
 #' @return GenotypeData object
 #'
 #' @author tcharlon
-#' @export
 actg_tsv_to_gdata <- function(geno_path, scans_path,
   scans_col_map = 'scan_id', snps_path,
   snps_col_map = c('probe_id', 'chromosome', 'position'),
@@ -217,7 +227,6 @@ txt_snps_to_df <- function(path, col_map) {
 #' @return genotype data object
 #'
 #' @author tcharlon
-#' @export
 build_gwastools <- function(geno, scans, snps) {
   stopifnot(inherits(geno, 'matrix'))
 
@@ -245,7 +254,6 @@ build_gwastools <- function(geno, scans, snps) {
 #' @return NULL
 #'
 #' @author tcharlon
-#' @export
 bed_targz_to_gds <- function(tarpath, gdspath) {
   check_fx_args(tarpath = '!C1', gdspath = '!C1')
   die_unless(file.exists(tarpath), paste('File does not exist:', tarpath))

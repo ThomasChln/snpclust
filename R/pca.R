@@ -1,22 +1,3 @@
-#' Get qb_pca object
-#'
-#' Create a qb_pca object that stores the pca object and the
-#' original data
-#'
-#' @param data      Data frame subsetted in columns by vars, in rows by obs,
-#'                  and passed as parameter data to prcomp.
-#' @param id_col    Name of identifier column for observations (must not contain duplicates)
-#' @param obs       Row subset of data. No subset if NULL.
-#'                    Default: NULL
-#' @param vars      Names of columns to be used for the PCA. All the variables
-#' which are not specified will be considered as supplementary variables. If NULL
-#' all the variables are used except the ID column
-#' @param center    Parameter passed to prcomp as center.
-#' @param scale     Parameter passed to prcomp as scale..
-#'
-#' @return List of data, variables, and prcomp object.
-#'
-#' @export
 get_pca    <- function(data, id_col, obs = NULL, vars = NULL, center = TRUE,
   scale = TRUE) {
 
@@ -81,13 +62,6 @@ get_pca    <- function(data, id_col, obs = NULL, vars = NULL, center = TRUE,
   qb_pca
 }
 
-#' Compute the pca using prcomp
-#'
-#' @param data data.frame in wide format
-#' @param center  Parameter passed to prcomp as center.
-#' @param scale   Parameter passed to prcomp as scale..
-#' @return prcomp object
-#' @author adicara
 compute_pca_prcomp <- function(data, center = TRUE, scale = TRUE) {
   prcomp(data,
     retx = TRUE,
@@ -95,29 +69,6 @@ compute_pca_prcomp <- function(data, center = TRUE, scale = TRUE) {
     scale. = scale)
 }
 
-#' Fortify the original dataset used for the
-#' pca with the results of the PCA.
-#'
-#' @param qb_pca  qb_pca object
-#' @param active_obs         Character identifiers of active observations to use. If TRUE no
-#'                    subset. If FALSE none are used.
-#'                      Default: TRUE
-#' @param sup_obs     Character identifiers of suppl. observations to use. If TRUE no
-#'                    subset. If FALSE none are used.
-#'                      Default: FALSE
-#' @param active_vars        Character identifiers of active variables to use. If TRUE no
-#'                    subset. If FALSE none are used.
-#'                      Default: FALSE
-#' @param sup_vars    Character identifiers of suppl. variables to use. If TRUE no
-#'                    subset. If FALSE none are used.
-#'                      Default: FALSE
-#' @param include_pc_variance Logical, includes the explained variance in the data frame
-#' @return data.frame of original data with
-#' additional columns containing the PCs.
-#' The explained variance, variables, and individuals are rbinded in the
-#' same data.frame
-#' @author adicara
-#' @export
 pca_fortify <- function(qb_pca,
   active_obs = TRUE,
   sup_obs = TRUE,
@@ -145,12 +96,6 @@ pca_fortify <- function(qb_pca,
   df_fort
 }
 
-#' Compute the PC coordinates of supplementary observations
-#'
-#' @param qb_pca_obj qb_pca object
-#' @param obs character vector of obs to retrieve
-#' @return data.frame with PC coordinates of sup individuals
-#' @author adicara
 compute_pca_obs_sup  <- function(qb_pca_obj, obs) {
 
   #get index of obs_sup. Add rowname to ensure retrieval of ids
@@ -176,20 +121,6 @@ compute_pca_obs_sup  <- function(qb_pca_obj, obs) {
 }
 
 ###############################################################################
-#' check availability
-#'
-#' check that elements of selected vector are in the available vector,
-#' or if selected is true get all available, if false get none.
-#'
-#' Jun 5, 2014
-#'
-#' @param selected logical or character vector, see decription
-#' @param available logical or character vector, see decription
-#' @param name_error_msg name of the character vector printed in the error message
-#' @return selected character vector, see description
-#'
-#' @author tcharlon
-#' @export
 check_availability <- function(selected, available, name_error_msg) {
   selected <- if(length(selected) == 1 && selected == TRUE) { # get all
       available
@@ -210,17 +141,6 @@ check_availability <- function(selected, available, name_error_msg) {
   selected
 }
 
-#' Extract individuals from the PCA, together
-#' with the PCs values
-#'
-#' @param qb_pca qb_pca object
-#' @param active Logical or vector of active observations names to retrieve.
-#'              If true all are retrieved, if false none
-#' @param sup Logical or vector of supplementary observations names to retrieve.
-#'              If true all are retrieved, if false none
-#' @return data.frame of individuals
-#' @author adicara
-#' @export
 get_pca_individuals <- function(qb_pca, active = TRUE, sup = TRUE) {
 
   die_unless(inherits(qb_pca, "qb_pca"),
@@ -284,7 +204,7 @@ compute_var_coords_categorical <- function(qb_pca, data_active, varname) {
         qb_pca@pca$center) / qb_pca@pca$scale
     out <- new_indiv %*% qb_pca@pca$rotation
 
-    #	fix :if contains at least one NA then return NA
+    #  fix :if contains at least one NA then return NA
     # it could be done before the computation.
     # but in this way we are guaranteed that the
     # cardinality is the same
@@ -304,15 +224,6 @@ compute_var_coords_categorical <- function(qb_pca, data_active, varname) {
   mat_coords
 }
 
-#' Get the coordinates for supplementary variables
-#'
-#' @param qb_pca qb_pca object
-#' @param vars vector of supplementary variable name for which the
-#' coordinates need to be computed. By default all the supplementary
-#' variables contained in the qb_pca object.
-#' @return data.frame containing the PC values for each supplementary variable.
-#' Categorical variables are represented by level
-#' @author adicara
 compute_pca_coords_vars_sup  <- function(qb_pca, vars) {
 
   check_fx_args(vars = '!C+')
@@ -342,17 +253,6 @@ compute_pca_coords_vars_sup  <- function(qb_pca, vars) {
   dfr_sup_vars
 }
 
-#' Extract vars from the PCA, together
-#' with the PCs values
-#'
-#' @param qb_pca qb_pca object
-#' @param active Logical or vector of active variable names to retrieve.
-#'              If true all are retrieved, if false none
-#' @param sup Logical or vector of supplementary variable names to retrieve.
-#'              If true all are retrieved, if false none
-#' @return data.frame of variables
-#' @author adicara
-#' @export
 get_pca_vars <- function(qb_pca, active = TRUE, sup = TRUE) {
 
   die_unless(inherits(qb_pca, "qb_pca"),
@@ -384,12 +284,6 @@ get_pca_vars <- function(qb_pca, active = TRUE, sup = TRUE) {
 }
 
 
-#' Get explained variance for each PC
-#'
-#' @param qb_pca qb_pca object
-#' @return vector of explained variance for each PC expressed in percentage
-#' @author adicara
-#' @export
 get_pca_explained_var <- function (qb_pca) {
 
   die_unless(inherits(qb_pca, "qb_pca"),
@@ -406,57 +300,6 @@ get_pca_explained_var <- function (qb_pca) {
   df_explained_var
 }
 
-
-# JW fix: Duplicated function in pca_vtest.R
-#
-## Fit lm between PC and variable of interest
-##
-## @param dfr data.frame containing variables
-## @param pcvecname name of PC column of interest
-## @param varvecname name of variable column of interest
-## @return data.frame containing t-value and p-value for the
-## variable term
-## @author adicara
-#compute_pca_vtest <- function(dfr, pcvecname, varvecname) {
-#
-#  check_fx_args(dfr = "!D+", pcvecname = "!C1", varvecname = "!C1")
-#
-#  frm <- as.formula(paste(pcvecname, "~" ,varvecname))
-#  fit <- lm(frm, dfr)
-#
-#  # get stats of interest
-#  dflt <- get_summary(sw_reg(fit, aov=NULL, conf_int = NULL))
-#  dflt <- dflt %>%
-#    filter((TEST == "t value" | PARAMTYPE == "P_value") &
-#        PARAMNAME != "(Intercept)") %>%
-#    select(PARAMNAME, PARAMTYPE, TEST, VALUE)
-#
-#
-#  # format the name of the parameter (for cat variables)
-#  dflt <- within(dflt,{
-#      PARAMTYPE[TEST == "t value"]  <- "T_value"
-#      TEST <- NULL
-#      .reg <- sprintf("^(%s)(.+)", varvecname)
-#      PARAMNAME <- gsub(.reg, "\\1_|_\\2", PARAMNAME)
-#    })
-#  dflt
-#
-#}
-
-
-#' Add supplementary vars to an existing qb_pca object.
-#'
-#' The new variables need to be supplied as a data.frame
-#' containing an identifier column with the same name as
-#' the one contained in the qb_pca object.
-#' The data is added using a left join (old-data, new-data).
-#' This ensures that the original data is not subsetted.
-#'
-#' @param qb_pca qb_pca object
-#' @param df_vars variables data frame
-#' @return qb_pca object with additional supplementary variables
-#' @author adicara
-#' @export
 add_pca_sup_vars <- function(qb_pca, df_vars) {
 
   die_unless(inherits(qb_pca, "qb_pca"),
@@ -501,19 +344,14 @@ add_pca_sup_vars <- function(qb_pca, df_vars) {
 
 setOldClass("prcomp")
 
-#' s4 class to handle PCA parameters and results
-#'  
-#' @name qb_pca-class
-#' @rdname qb_pca-class
-#' @exportClass  qb_pca
 setClass("qb_pca",
-		representation(
-				data = "data.frame",
-				pca = "prcomp",
-				id_col = "character",
-				obs = "character",
-				obs_sup = "character",
-				vars = "character",
-				vars_sup = "character"
-		)
+  representation(
+    data = "data.frame",
+    pca = "prcomp",
+    id_col = "character",
+    obs = "character",
+    obs_sup = "character",
+    vars = "character",
+    vars_sup = "character"
+  )
 )

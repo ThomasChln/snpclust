@@ -1,13 +1,3 @@
-#' alternative constructor for GenotypeDataSubsetSubset 
-#' 
-#' 
-#' @param gdata     a GenotypeData object
-#' @param snps_idx  indices of the SNPs to keep
-#' @param scans_idx  indices of the scans to keep
-#' 
-#' @return a GenotypeDataSubset object
-#' @author Karl
-#' @export
 genotype_data_subset <- function(gdata, snps_idx = seq_len(nsnp(gdata)), 
                                         scans_idx = seq_len(nscan(gdata))) {
   stopifnot(is(gdata, 'GenotypeData'))
@@ -25,27 +15,6 @@ genotype_data_subset <- function(gdata, snps_idx = seq_len(nsnp(gdata)),
 }
 
 
-#' Replacement for GenotypeData::getGenotype
-#'
-#' Easier: use indices rather that intervals for snps
-#' Fast:   indices are split in intervals for fact chunk reads
-#' Safer:  never drop dimensions
-#' Better: able to get genotype strings using alleles from GDS-based
-#'    GenotypeData
-#'
-#'
-#' will die if no snps or no scans are selected
-#'
-#' @param gdata       a GenotypeData object
-#' @inheritParams fetch_genotypes_by_idx
-#' @inheritParams fetch_genotypes_by_blocks
-#' @param char        to retrieve genotypes as characters using stored alleles
-#'                    if any or default "A" and "B"
-#'
-#' @return genotypes as a matrix snps by scans in the same order as snp_idx
-#'  and scans_idx
-#' @author karl (based on adicara fetch_genotypes_by_block)
-#' @export
 fetch_genotypes <- function(
   gdata,
   snps_idx = NULL,
@@ -95,17 +64,6 @@ fetch_genotypes <- function(
   lapply(blks, function(x) c(x[1], length(x)))
 }
 
-#' Retrieve genotypes from a GenotypeData object using snp and scan indices
-#'
-#' Perform smart queries by reordering the indices into consecutive blocks
-#'
-#' @inheritParams fetch_genotypes
-#' @param snps_idx    vector of snps indices
-#' @param scans_idx   vector of scans indices
-#'
-#' @return see \code{\link{fetch_genotypes}}
-#' @author karl
-#' @export
 fetch_genotypes_by_idx <- function(
   gdata,
   snps_idx = seq_len(nsnp(gdata)),
@@ -149,16 +107,6 @@ fetch_genotypes_by_idx <- function(
 }
 
 
-#' Retrieve genotypes from a GenotypeData object using consecutive blocks
-#'
-#' @inheritParams fetch_genotypes
-#' @param snps_blocks   a list of disjoint blocks (i.e c(start, length) of snps
-#' @param scans_blocks  a list of disjoint blocks (i.e c(start, length) of scans
-#' @param snps_first    whether snps is the first dimension. to optimize
-#'    the fetch strategy
-#' @return see \code{\link{fetch_genotypes}}
-#' @author karl
-#' @export
 fetch_genotypes_by_blocks <- function(
   gdata,
   snps_blocks = list(c(1, nsnp(gdata))),
@@ -214,17 +162,6 @@ fetch_genotypes_by_blocks <- function(
   genotypes
 }
 
-#' save a GWASTools::GenotypeData object as binary PLINK files
-#'
-#' Will create 3 files: .bed, .fam and .bim
-#'
-#' @param gdata    	the genotype data object to save
-#' @param basename	the basename/path of the files to save
-#' @param dir				the destination dir
-#' @param snps_idx	indices of snps to save
-#' @param scans_idx	indices of scans to save
-#' @param ...	additional arguments for snpgdsGDS2BED
-#' @export
 save_genotype_data_as_plink <- function(
   gdata,
   basename,
@@ -246,28 +183,6 @@ save_genotype_data_as_plink <- function(
 
 
 
-#' save a GWASTools::GenotypeData object a a GDS file
-#'
-#' WARNING: All NA in character vector or columns are converted into empty
-#' strings ""
-#'
-#'
-#' @param gdata             the GenotypeData object to save
-#' @param filename          the gds output filename
-#' @param save_annotations  whether to include in the gds the serialization
-#'                          of the SnpAnnotationDataFrame and
-#'                          ScanAnnotationDataFrame if applicable
-#' @param compress          the compression format for the annotation in the
-#'    GDS file, one of "", "ZIP", "ZIP.fast", "ZIP.default", or "ZIP.max"
-#' @param check             whether to check the results (paranoid check)
-#' @param quiet         whether to be quiet
-#' @inheritParams fetch_genotypes_by_chunk_iterator
-#' @param ...               additional arguments for
-#'                            \code{\link{fetch_genotypes_by_chunk_iterator}}
-#'
-#' @return NULL
-#' @export
-#' @family gds
 save_genotype_data_as_gds <- function(
   gdata,
   filename,
@@ -346,16 +261,7 @@ save_genotype_data_as_gds <- function(
 }
 
 
-#' write genotypes to a GDS file/node
-#'
-#' @param gds           a gds.class
-#' @inheritParams write_snp_gds
-#' @param node_name     the node of the name to create
-#' @param quiet         whether to be quiet
 
-#' @return the created gdsn node
-#' @export
-#' @family gds
 write_genotypes_to_gds <- function(
   gds,
   geno_iterator,
@@ -401,28 +307,6 @@ write_genotypes_to_gds <- function(
     allow.fork = TRUE)
 }
 
-#' write a snp GDS file as used by SNPRelate
-#'
-#' This is a new implementation of snpgdsCreateGeno optimized for memory
-#'
-#' N.B: the genotypes are stored in sample.order, i.e optimized to read
-#' SNP by SNP, not sample by sample
-#'
-#' The alleles must be specified as character "A/B". e.g. "C/T"
-#'
-#'
-#' @param filename      the filename of GDS file to create
-#' @param geno_iterator a fetch_genotypes_by_chunk_iterator iterator
-#' @param sample_ids    the sample ids, must be unique
-#' @param snp_infos     a data frame with columns snpID, chromosome,
-#'                      position, alleles
-#' @param compress      the compression method for the variables except genotype
-#' @param quiet         whether to be quiet
-#' @param ...           options forwarded to \code{\link{write_genotypes_to_gds}}
-#'
-#' @return NULL
-#' @export
-#' @family gds
 write_snp_gds <- function(filename, geno_iterator, sample_ids, snp_infos,
   compress = "ZIP.max", quiet = FALSE, ...) {
 
@@ -451,18 +335,6 @@ write_snp_gds <- function(filename, geno_iterator, sample_ids, snp_infos,
 
 
 
-#' load  GDS file as GWASTools::GenotypeData object
-#'
-#' If the the SnpAnnotationDataFrame and the ScanAnnotationDataFrame
-#' were saved (cf save_genotype_data_as_gds)) they will be restored.
-#'
-#' @param gds_file        the gds_file to load
-#' @param read_snp_annot  whether to read embedded SnpAnnotationDataFrame
-#' @param read_scan_annot whether to read embedded ScanAnnotationDataFrame
-#'
-#' @return a GenotypeData object linked to a GdsGenotypeReader
-#' @export
-#' @family gds
 load_gds_as_genotype_data <- function(gds_file, read_snp_annot = TRUE,
   read_scan_annot = TRUE) {
 
@@ -502,28 +374,6 @@ snp_gds_open <- function(...) {
 
 
 
-#' make a snpgds file if needed
-#'
-#' most SNPRelate functions use a snpgds file.
-#' GenotypeData using a GdsGenotypeReader have already
-#' a snpgds file that can be used, but others don't.
-#'
-#' This function takes care of the details, and return a list
-#' of (snpgds to use, snps_idx = the snp indices
-#' to use on this file that are equivalent to the
-#' input snps_idx, scans_idx= idem, new_file=whether the snpgds
-#' is new, and ergo should be deleted, snp_ids: the snps ids to use
-#' on the snpgds to use, scan_ids: the scan ids to use on the new file)
-#'
-#' do not forget to delete the newly created file if any !!!!!
-#'
-#' @param gdata    	the genotype data object to save
-#' @param snps_idx	indices of snps to use
-#' @param scans_idx	indices of scans to use
-#'
-#' @return a list(snpgds, snps_idx, scans_idx, new_file, snp_ids, scan_ids)
-#' @author karl
-#' @export
 request_snpgds_file <- function(
     gdata,
     snps_idx = NULL,
@@ -568,18 +418,6 @@ request_snpgds_file <- function(
 }
 
 
-#' alternative constructor for GdsGenotypeReader that also accepts a gds object
-#'
-#' This hopefully will be implemented in GdsGenotypeReader if my patch is accepted
-#' When given a filename, will open it with allow_duplicate and allow_fork.
-#' You will then be responsible for closing the handle, but because it's opened
-#' with allow_duplicate it is not that important
-#'
-#' @param gds     a gds filename or object
-#' @param ...     additional args for GdsGenotypeReader constructor
-#'
-#' @author Karl
-#' @export
 gds_genotype_reader <- function(gds, ...) {
   if (is.character(gds)) {
     gds <- snp_gds_open(gds, TRUE, TRUE, TRUE)
@@ -592,16 +430,6 @@ gds_genotype_reader <- function(gds, ...) {
 }
 
 
-#' return an iterator that fetches the genotypes by chunks
-#'
-#' @param gdata         a GenotypeData object
-#' @param chunk_size    the desired chunk size
-#' @param nb_chunks     the desired nb_chunks. Takes precedence over chunk_size
-#'  if both given
-#'
-#' @return an iterator as a list with fields nb, chunk_size, get(i)
-#' @author karl
-#' @export
 fetch_genotypes_by_chunk_iterator <- function(
   gdata,
   chunk_size = 100L,
@@ -627,14 +455,6 @@ fetch_genotypes_by_chunk_iterator <- function(
 }
 
 
-#' check a GenotypeData object
-#'
-#' die in case of problem
-#'
-#' @param gds     a gds filename or object
-#'
-#' @author Karl
-#' @export
 check_snp_gds <- function(gds) {
   if (is.character(gds)) {
     gds <- snp_gds_open(gds, TRUE, TRUE, TRUE)
@@ -689,13 +509,6 @@ check_snp_gds <- function(gds) {
   }
 }
 
-#' read and process the alleles stored in a snp gds file
-#'
-#' The "" empty alleles are decoded as NA
-#'
-#'  @param gds     a gds object
-#'  @return a character vector of alleles in the "A/B" format
-#'      and NA for missing alleles, or NULL if not available
 read_snp_gds_alleles <- function(gds) {
   if (is.null(index.gdsn(gds, "snp.allele", silent = TRUE)))
     return(NULL)
@@ -707,14 +520,6 @@ read_snp_gds_alleles <- function(gds) {
 }
 
 
-#' check a GenotypeData object
-#'
-#' die in case of problem
-#'
-#' @param gdata     a GenotypeData object
-#'
-#' @author Karl
-#' @export
 check_genotype_data <- function(gdata) {
 
   nb_snps <- nsnp(gdata)

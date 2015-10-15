@@ -3,27 +3,35 @@
 %\VignetteIndexEntry{SNPClust applied to Europeans}
 -->
 
-# SNPClust call
+# SNPClust 
 
-The snpclust_hgdp function is a wrapper to the snpclust function with specific code for the formatting of the Human Genome Diversity Project dataset.
-Only a small subset of the data is used here, 157 samples out of 940 and 5,000 SNPs out of 660,918.
-
+SNPClust is demonstrated here on a small subset of the Human Genome Diversity Project (HGDP) dataset: 157 European samples out of 940 and 5,000 SNPs out of 660,918.
 
 ```{r, message = FALSE, warning = FALSE}
-suppressPackageStartupMessages(library(snpclust))
-dir <- system.file('extdata', package = 'snpclust')
-hgdp <- snpclust_hgdp(dir)
-gds_path <- file.path(dir, 'hgdp.gds')
-gdata <- load_gds_as_genotype_data(gds_path)
-on.exit(file.remove(gds_path))
+library(snpclust)
+```
+
+The HGDP files are first converted to the Genomic Data Structure (GDS) format (cf. R package gdsfmt).
+
+```{r, message = FALSE, warning = FALSE}
+gds_path <- save_hgdp_as_gds()
+```
+
+SNPClust is then called on the GDS filepath.
+
+```{r, message = FALSE, warning = FALSE}
+snpclust_object <- snpclust(gds = gds_path)
+```
+```{r, echo = FALSE, results = 'hide'}
+file.remove(gds_path)
 ```
 
 # Quality control
 
-Details about the number of patients and SNPs removed during quality control are stored in a data frame.
+Details about the quality control of the dataset are stored in a data frame.
 
 ```{r, results = 'asis'}
-knitr::kable(hgdp$qc[[1]], 'markdown')
+knitr::kable(snpclust_object$qc, 'markdown')
 ```
 
 # Principal Component Analysis (PCA)
@@ -32,24 +40,17 @@ The results of PCA applied to the quality controlled dataset are stored in a lon
 Here we see that samples are grouped by country of origin.
 
 ```{r}
-df_pca <- hgdp$pca[[1]]
-groups <- 'population'
-ggplot_pca(df_pca, groups, ellipses = TRUE)
-
-plot_pca_pairs(1:3, df_pca, groups)
-plot_pca_pairs(4:6, df_pca, groups)
+ggplot_pca(snpclust_object$pca, 'population', ellipses = TRUE)
+plot_pca_pairs(1:3, snpclust_object$pca, 'population')
+plot_pca_pairs(4:6, snpclust_object$pca, 'population')
 ```
 
 # SNPs contributions to Principal Components (PCs)
 
-For each PC, the absolute SNP contributions are displayed.
-Here we applied PCA only a subset of 5,000 SNPs out of 660,918.
-When PCA is applied on all the SNPs, we can see a strong localized contribution from chromosome 8 in the 11th principal component.
+For each PC, the absolute SNP contributions are displayed. SNPs are displayed by chromosome and position.
 
 ```{r}
-df_vars <- subset(df_pca, PCA_VARTYPE == 'VAR')
-on.exit(GWASTools::close(gdata))
-ggplot_manhat(df_vars, gdata, 1:10, ncol = 5) 
+ggplot_manhat(df_pca = snpclust_object$pca, gdata = snpclust_object$gdata) 
 ```
 
 # SNPs selection by Gaussian mixture models
@@ -58,11 +59,7 @@ The Gaussian mixture models select SNPs above the background noise of other SNPs
 Here the selected SNPs are colored in red.
 
 ```{r}
-var_ids <- as.numeric(gsub('VAR_', '', df_vars$PCA_VARNAME))
-chromosomes <- gdata@snpAnnot@data[var_ids, 'chromosome']
-df_vars <- abs(df_vars[1:10])
-l_peaks <- peak_selection(df_vars, chromosomes)
-ggplot_selection(l_peaks, df_vars, ncol = 5, scales = 'free_y') 
+ggplot_selection(l_peaks = snpclust_object$peaks, df_pca = snpclust_object$pca) 
 ```
 
 # PCA on the SNPClust selected dataset
@@ -70,8 +67,7 @@ ggplot_selection(l_peaks, df_vars, ncol = 5, scales = 'free_y')
 When PCA is applied on the SNPClust selected dataset, samples are not grouped by geographic origin anymore.
 
 ```{r}
-df_pca_feats <- hgdp$df_pca_feats
-ggplot_pca(hgdp$df_pca_feats, groups, ellipses = TRUE)
-plot_pca_pairs(1:3, df_pca_feats, groups)
-plot_pca_pairs(4:6, df_pca_feats, groups)
+ggplot_pca(snpclust_object$features_pca, 'population', ellipses = TRUE)
+plot_pca_pairs(1:3, snpclust_object$features_pca, 'population')
+plot_pca_pairs(4:6, snpclust_object$features_pca, 'population')
 ```

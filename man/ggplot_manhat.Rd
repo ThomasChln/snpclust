@@ -4,12 +4,11 @@
 \alias{ggplot_manhat}
 \title{ggplot_manhat}
 \usage{
-ggplot_manhat(df_vars, gdata, axes = 1:9, byposition = TRUE,
-  n_points = 2000, ...)
+ggplot_manhat(df_pca, gdata, axes = paste0("PC", 1:10), byposition = TRUE,
+  n_points = 2000, ncol = 5, ...)
 }
 \arguments{
-\item{df_vars}{Data frame of variable contributions with columns
-PCA_VARNAME and PC{axes}}
+\item{df_pca}{QB_pcafort data frame, requires variable contributions}
 
 \item{gdata}{GenotypeData object with snpIDs matching df_vars column
 PCA_VARNAME}
@@ -20,6 +19,8 @@ PCA_VARNAME}
 
 \item{n_points}{Maximum number of largest values to plot, for each
 principal component}
+
+\item{ncol}{ggplot2::facet_wrap}
 
 \item{...}{Passed to ggplot2::facet_wrap}
 }

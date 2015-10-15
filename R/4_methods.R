@@ -17,45 +17,27 @@
 #}
 
 
-#' default method
-#' @inheritParams fetch_gds
-#' @export
 fetch_gds.default <- function(obj, ...) {
   NULL
 }
 
-#' for GdsGenotypeReader
-#' @inheritParams fetch_gds
-#' @export
 fetch_gds.GdsGenotypeReader <- function(obj, ...) {
   obj@handler
 }
 
-#' for GenotypeData
-#' @inheritParams fetch_gds
-#' @export
 fetch_gds.GenotypeData <- function(obj, ...) {
   fetch_gds(obj@data)
 }
 
-#' for GenotypeDataSubset: no directly connected GDS
-#' @inheritParams fetch_gds
-#' @export
 fetch_gds.GenotypeDataSubset <- function(obj, ...) {
   NULL
 }
 
 
-#' default method
-#' @inheritParams is_snp_first_dim
-#' @export
 is_snp_first_dim.default <- function(obj, ...) {
   NA
 }
 
-#' test a snp gds file if the genotypes first dimension is snp
-#' @inheritParams is_snp_first_dim
-#' @export
 is_snp_first_dim.gds.class <- function(obj, ...) {
   snpfirstdim <- NA
   rd <- names(get.attr.gdsn(index.gdsn(obj, "genotype")))
@@ -66,32 +48,20 @@ is_snp_first_dim.gds.class <- function(obj, ...) {
 }
 
 
-#' test in a (gds) GenotypeData file if the genotypes first dimension is snp
-#' @inheritParams is_snp_first_dim
-#' @export
 is_snp_first_dim.GenotypeData <- function(obj, ...) {
   is_snp_first_dim(obj@data)
 }
 
 
-#' test in a (gds) GdsReader if the genotypes first dimension is snp
-#' @inheritParams is_snp_first_dim
-#' @export
 is_snp_first_dim.GdsGenotypeReader <- function(obj, ...) {
   is_snp_first_dim(obj@handler)
 }
 
 
-#' always TRUE
-#' @inheritParams is_snp_first_dim
-#' @export
 is_snp_first_dim.MatrixGenotypeReader <- function(obj, ...) {
   TRUE
 }
 
-#' always TRUE
-#' @inheritParams is_snp_first_dim
-#' @export
 is_snp_first_dim.NcdfGenotypeReader <- function(obj, ...) {
   TRUE
 }
@@ -100,13 +70,10 @@ is_snp_first_dim.NcdfGenotypeReader <- function(obj, ...) {
 
 
 
-#' @export
 fetch_allele1.default <- function(obj, snps_idx) { NULL }
 
-#' @export
 fetch_allele2.default <- function(obj, snps_idx) { NULL }
 
-#' @export
 fetch_allele1.GenotypeData <- function(obj, ...) {
   alleles <- getAlleleA(obj, ...)
   if (!is.null(alleles)) return(alleles)
@@ -114,7 +81,6 @@ fetch_allele1.GenotypeData <- function(obj, ...) {
   fetch_allele1(obj@data, ...)
 }
 
-#' @export
 fetch_allele2.GenotypeData <- function(obj, ...) {
   alleles <- getAlleleB(obj, ...)
   if (!is.null(alleles)) return(alleles)
@@ -138,14 +104,12 @@ fetch_snpgds_alleles <- function(gdsobj, snps_idx) {
   alleles[order(snps_idx)]
 }
 
-#' @export
 fetch_allele1.GdsGenotypeReader <- function(obj, snps_idx) {
   alleles <- fetch_snpgds_alleles(obj@handler, snps_idx)
   if (is.null(alleles)) return(NULL)
   substr(alleles, 1, 1)
 }
 
-#' @export
 fetch_allele2.GdsGenotypeReader <- function(obj, snps_idx) {
   alleles <- fetch_snpgds_alleles(obj@handler, snps_idx)
   if (is.null(alleles)) return(NULL)
@@ -153,22 +117,18 @@ fetch_allele2.GdsGenotypeReader <- function(obj, snps_idx) {
 }
 
 
-#' @export
 get_scan_annot.GenotypeData <- function(obj, ...) {
   obj@scanAnnot
 }
 
-#' @export
 get_snp_annot.GenotypeData <- function(obj, ...) {
   obj@snpAnnot
 }
 
-#' @export
 get_scan_annot.GenotypeDataSubset <- function(obj, ...) {
   obj@scanAnnot[obj@scans_idx, ]
 }
 
-#' @export
 get_snp_annot.GenotypeDataSubset <- function(obj, ...) {
   obj@snpAnnot[obj@snps_idx, ]
 }

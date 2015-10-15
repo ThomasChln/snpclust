@@ -16,7 +16,7 @@
 #' @param maf         MAF ratio threshold
 #' @param tsnp        LD threshold
 #' @param ibs         Identity by state threshold
-#' @param n_cores     Number of cores to use (default detected)
+#' @param n_cores     Number of cores to use
 #' @return list of gdata and QC data frame
 #'
 #' @author tcharlon
@@ -70,7 +70,6 @@ snprelate_qc <- function(gdata, sample_nas = .03, snp_nas = .01, maf = .05,
 #' @return qb_pcafort
 #'
 #' @author tcharlon
-#' @export
 snprelate_pca <- function(gdata, n_axes = 32, n_cores = 2) {
   stopifnot(inherits(gdata, 'GenotypeData'))
 
@@ -107,6 +106,15 @@ snprelate_pca <- function(gdata, n_axes = 32, n_cores = 2) {
 
   df_pca <- df_rbind_all(df_variance, df_obs, df_vars)
 
+  # add obs annotations from gdata
+  obs_idxs <- df_pca$PCA_VARTYPE == 'OBS'
+  df_annot <- gdata@scanAnnot@data[l_ids[[1]],] 
+  for (colname in names(gdata@scanAnnot@data)) {
+    df_pca[[colname]] <- NA
+    df_pca[obs_idxs, colname] <- as.character(df_annot[[colname]])
+    df_pca[[colname]] <- factor(df_pca[[colname]])
+  }
+  
   class(df_pca) <- c('data.frame', 'qb_pcafort')
 
   df_pca
@@ -137,15 +145,6 @@ sample_impute <- function(data) {
 }
 
 
-###############################################################################
-#' Merge data frames on rownames
-#'
-#' @param l_df List of data frames
-#' @param ...  Passed to merge
-#' @author tcharlon
-#' @return Data frame
-#'
-#' @export
 merge_dfs <- function(l_df, ...) {
   stopifnot(is.list(l_df))
   while (length(l_df) > 1) {
@@ -157,19 +156,6 @@ merge_dfs <- function(l_df, ...) {
 }
 
 
-###############################################################################
-#' rbind data frames (fast)
-#'
-#' currently a wrapper around dplyr::bind_rows
-#'
-#' Beware: the resulting columns will be factor if and only if the
-#' levels are identical
-#'
-#' @inheritParams 		dplyr::bind_rows
-#' @param use_row_names 		whether to use the row names, otherwise
-#' 													the rbound data frame will have default rownames
-#' @return a data frame
-#' @export
 df_rbind_all <- function(...,  use_row_names = FALSE) {
   df <- as.data.frame(dplyr::bind_rows(...))
   if (use_row_names) {
@@ -204,7 +190,6 @@ df_rbind_all <- function(...,  use_row_names = FALSE) {
 #'
 #' @return  a list of SNP IDs stratified by chromosomes.
 #' @author karl
-#' @export
 snprelate_ld_select <- function(gdata,
   window_length = 500L,
   min_r2,
@@ -244,13 +229,6 @@ snprelate_ld_select <- function(gdata,
   res
 }
 
-get_functional_pca <- function(set, gdata, n_axes = 32, n_cores = 1, ...) {
-  qced_gdata <- snprelate_qc(gdata, ...)
-  pcafort <- snprelate_pca(qced_gdata$gdata, n_axes, n_cores)
-
-  list(pca = pcafort, qc = qced_gdata$df_qc)
-}
-
 ###############################################################################
 snps_hla <- function(gdata) {
   location <- getSnpVariable(gdata, c('chromosome', 'position'))
@@ -259,13 +237,18 @@ snps_hla <- function(gdata) {
 }
 
 ###############################################################################
-.get_functional_gdata <- function(set, gdata) {
-  snps <- getSnpVariable(gdata, 'probe_id')
+.genotype_data_subset <- function(set, gdata) {
   snps_idx <- switch(set,
     hla = which(snps_hla(gdata)),
-    non_hla = which(!snps_hla(gdata)))
+    non_hla = which(!snps_hla(gdata)),
+    getSnpID(gdata))
 
-  genotype_data_subset(gdata, snps_idx)
+  if (set == 'no_controls' && !'phenotype' %in% names(gdata@scanAnnot@data)) {
+    set <- ''
+  }
+  scans_idx <- switch(set,
+    no_controls = which(gdata@scanAnnot@data$phenotype != 'Control'),
+    getScanID(gdata))
+
+  genotype_data_subset(gdata, snps_idx, scans_idx)
 }
-
-
