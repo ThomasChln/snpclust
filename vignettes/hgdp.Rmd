@@ -41,8 +41,8 @@ Here we see that samples are grouped by country of origin.
 
 ```{r}
 ggplot_pca(qb_pcafort = snpclust_object$pca, groups = 'population', ellipses = TRUE)
-plot_pca_pairs(axes = 1:3, qb_pcafort = snpclust_object$pca, groups = 'population')
-plot_pca_pairs(axes = 4:6, qb_pcafort = snpclust_object$pca, groups = 'population')
+plot_pca_pairs(axes = 1:3, pcafort = snpclust_object$pca, groups = 'population')
+plot_pca_pairs(axes = 4:6, pcafort = snpclust_object$pca, groups = 'population')
 ```
 
 # SNPs contributions to Principal Components (PCs)
@@ -68,6 +68,6 @@ When PCA is applied on the SNPClust selected dataset, samples are not grouped by
 
 ```{r}
 ggplot_pca(qb_pcafort = snpclust_object$features_pca, groups = 'population', ellipses = TRUE)
-plot_pca_pairs(axes = 1:3, qb_pcafort = snpclust_object$features_pca, groups = 'population')
-plot_pca_pairs(axes = 4:6, qb_pcafort = snpclust_object$features_pca, groups = 'population')
+plot_pca_pairs(axes = 1:3, pcafort = snpclust_object$features_pca, groups = 'population')
+plot_pca_pairs(axes = 4:6, pcafort = snpclust_object$features_pca, groups = 'population')
 ```
