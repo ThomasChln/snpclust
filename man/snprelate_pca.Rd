@@ -14,7 +14,7 @@ snprelate_pca(gdata, n_axes = 32, n_cores = 2)
 \item{n_cores}{Number of cores}
 }
 \value{
-qb_pcafort
+pca
 }
 \description{
 Oct 10, 2014

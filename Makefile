@@ -5,11 +5,8 @@ PKGSRC  := $(shell basename `pwd`)
 
 all: check clean
 
-deps:
-	Rscript -e 'if (!require("Rd2roxygen")) install.packages("Rd2roxygen", repos="http://cran.rstudio.com")'
-
-docs:
-	R -q -e 'library(Rd2roxygen); rab(".", build = FALSE)'
+doc.pdf:
+	R CMD Rd2pdf -o doc.pdf .
 
 build:
 	cd ..;\
@@ -26,10 +23,6 @@ install: build
 check: build-cran
 	cd ..;\
 	R CMD check $(PKGNAME)_$(PKGVERS).tar.gz --as-cran
-
-travis: build
-	cd ..;\
-	R CMD check $(PKGNAME)_$(PKGVERS).tar.gz --no-manual
 
 clean:
 	cd ..;\

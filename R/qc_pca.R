@@ -67,7 +67,7 @@ snprelate_qc <- function(gdata, sample_nas = .03, snp_nas = .01, maf = .05,
 #' @param gdata   GenotypeData object
 #' @param n_axes  Number of PCs to fetch
 #' @param n_cores Number of cores
-#' @return qb_pcafort
+#' @return pca
 #'
 #' @author tcharlon
 snprelate_pca <- function(gdata, n_axes = 32, n_cores = 2) {
@@ -115,7 +115,7 @@ snprelate_pca <- function(gdata, n_axes = 32, n_cores = 2) {
     df_pca[[colname]] <- factor(df_pca[[colname]])
   }
   
-  class(df_pca) <- c('data.frame', 'qb_pcafort')
+  class(df_pca) <- c('data.frame', 'pca')
 
   df_pca
 }

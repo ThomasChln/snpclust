@@ -49,8 +49,8 @@ context('ggplots')
 test_ggplots <- function() {
   plts <- lapply(list(
       ggplot_pca(snpclust_object$pca, 'population', ellipses = TRUE),
-      ggplot_manhat(df_pca = snpclust_object$pca, gdata = snpclust_object$gdata),
-      ggplot_selection(l_peaks = snpclust_object$peaks, df_pca = snpclust_object$pca)
+      ggplot_manhat(pca = snpclust_object$pca, gdata = snpclust_object$gdata),
+      ggplot_selection(peaks = snpclust_object$peaks, pca = snpclust_object$pca)
     ), ggplot2::ggplotGrob) 
   lapply(append(plts, plot_pca_pairs(1:3, snpclust_object$pca, 'population')),
     expect_is, 'gtable')

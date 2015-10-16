@@ -2,30 +2,30 @@
 ###############################################################################
 #' ggplot_selection
 #'
-#' @param l_peaks List returned by peak_selection
-#' @param df_pca     QB_pcafort data frame, requires variable contributions
-#                    with columns PCA_VARNAME and axes
-#' @param axes       Axes to plot
-#' @param ncol    ggplot2::facet_wrap
-#' @param scales  ggplot2::facet_wrap
-#' @param ...     Passed to ggplot2::facet_wrap
-#' @param n_points   Maximum number of largest values to plot, for each
-#'                   principal component
+#' @param peaks    List returned by peak_selection
+#' @param pca      PCA data frame, requires variable contributions
+#                  with columns PCA_VARNAME and axes
+#' @param axes     Axes to plot
+#' @param ncol     ggplot2::facet_wrap
+#' @param scales   ggplot2::facet_wrap
+#' @param ...      Passed to ggplot2::facet_wrap
+#' @param n_points Maximum number of largest values to plot, for each
+#'                 principal component
 #' @return ggplot
 #' @export
-ggplot_selection <- function(l_peaks, df_pca, axes = paste0('PC', 1:10),
+ggplot_selection <- function(peaks, pca, axes = paste0('PC', 1:10),
   ncol = 5, scales = 'free_y', ..., n_points = 2e3) {
 
   PCA_VARTYPE <- NULL
-  df_vars <- abs(subset(df_pca, PCA_VARTYPE == 'VAR')[axes])
-  l_peaks <- l_peaks[names(l_peaks) %in% axes]
-  l_peaks_vars <- lapply(seq_along(l_peaks), function(idx) {
-      axe <- names(l_peaks)[idx]
-      list(axe, l_peaks[[idx]], df_vars[axe])
+  df_vars <- abs(subset(pca, PCA_VARTYPE == 'VAR')[axes])
+  peaks <- peaks[names(peaks) %in% axes]
+  peaks_vars <- lapply(seq_along(peaks), function(idx) {
+      axe <- names(peaks)[idx]
+      list(axe, peaks[[idx]], df_vars[axe])
     })
-  l_contribs <- lapply(l_peaks_vars, .ggplot_selection, n_points)
+  l_contribs <- lapply(peaks_vars, .ggplot_selection, n_points)
   df_vars <- data.frame(do.call(rbind, l_contribs))
-  peak_id_lvls <- names(l_peaks)
+  peak_id_lvls <- names(peaks)
   df_vars$peak_id <- factor(df_vars$peak_id, peak_id_lvls)
 
   ggplot(df_vars, aes_string(x = 'x', y = 'pc', color = 'sel')) + geom_point() +
@@ -61,11 +61,11 @@ ggplot_selection <- function(l_peaks, df_pca, axes = paste0('PC', 1:10),
 #' @inheritParams ggplot_selection
 #' @return ggplot
 #' @export
-ggplot_manhat <- function(df_pca, gdata, axes = paste0('PC', 1:10),
+ggplot_manhat <- function(pca, gdata, axes = paste0('PC', 1:10),
   byposition = TRUE, n_points = 2e3, ncol = 5, ...) {
 
   PCA_VARTYPE <- NULL
-  df_vars <- subset(df_pca, PCA_VARTYPE == 'VAR')
+  df_vars <- subset(pca, PCA_VARTYPE == 'VAR')
   ids <- as.numeric(gsub('VAR_', '', df_vars$PCA_VARNAME))
   snpvars <- c('chromosome', 'position', 'probe_id')
   df_snps <- gdata@snpAnnot@data
@@ -112,7 +112,7 @@ ggplot_manhat <- function(df_pca, gdata, axes = paste0('PC', 1:10),
 
 #' Ggplot a qb_pca object
 #'
-#' @param qb_pcafort  qb_pcafort or qb_pca object (which is fortified)
+#' @param pca  pca or qb_pca object (which is fortified)
 #' @param groups      Column index or name of qb_pca$data for the grouping of
 #'                    observations.
 #'                      Default: NULL
@@ -150,7 +150,7 @@ ggplot_manhat <- function(df_pca, gdata, axes = paste0('PC', 1:10),
 #'
 #' @author tcharlon
 #' @export
-ggplot_pca    <- function(qb_pcafort,
+ggplot_pca    <- function(pca,
   groups        = NULL,
   axes          = c(1,2),
   obs           = TRUE,
@@ -179,19 +179,19 @@ ggplot_pca    <- function(qb_pcafort,
   # init those 2 variables to avoid 'NOTE' in the R CMD CHECK
   PCA_VARNAME <- NULL
 
-  # dispatch on qb_pca and qb_pcafort
-  if (is(qb_pcafort, 'qb_pca')) {
-    qb_pcafort <- pca_fortify(qb_pcafort, obs, obs_sup, vars, vars_sup,
+  # dispatch on qb_pca and pca
+  if (is(pca, 'qb_pca')) {
+    pca <- pca_fortify(pca, obs, obs_sup, vars, vars_sup,
       pc_variance)
-  } else if (!is(qb_pcafort, 'qb_pcafort')) {
-    stop('qb_pcafort must be either a qb_pca or a qb_pcafort object')
+  } else if (!is(pca, 'pca')) {
+    stop('pca must be either a qb_pca or a pca object')
   }
 
   # get names of axes
   names_axe <- paste0("PC", axes)
 
   #Format axe labels and add PC explained variance
-  axis_labs <- create_pca_axis_labels(qb_pcafort = qb_pcafort, pc_variance = pc_variance,
+  axis_labs <- create_pca_axis_labels(pca = pca, pc_variance = pc_variance,
     axes = axes)
 
   # Define main data mapping
@@ -209,21 +209,21 @@ ggplot_pca    <- function(qb_pcafort,
   # check availability of all obs
 all_obs <- c(
   check_availability(obs,
-    qb_pcafort[qb_pcafort$PCA_VARTYPE == "OBS", 'PCA_VARNAME'],
+    pca[pca$PCA_VARTYPE == "OBS", 'PCA_VARNAME'],
     'active observations'),
   check_availability(obs_sup,
-    qb_pcafort[qb_pcafort$PCA_VARTYPE == "OBS_SUP", 'PCA_VARNAME'],
+    pca[pca$PCA_VARTYPE == "OBS_SUP", 'PCA_VARNAME'],
     'suppl. observations'))
 
   if (length(all_obs)) {
-    df_all_obs <- dplyr::filter(qb_pcafort, PCA_VARNAME %in% all_obs)
+    df_all_obs <- dplyr::filter(pca, PCA_VARNAME %in% all_obs)
     aes_param <- list(group = groups, color = groups, shape = 'PCA_VARTYPE')
     if (alpha_fill) {
       aes_param$alpha <- 'PCA_VARTYPE'
       plt <- plt + scale_alpha_manual(name = 'Observation',
         labels = c(OBS = 'Active', OBS_SUP = 'Suppl.'), values = c(1, 0.5))
     }
-    df_all_obs <- reorder_pcafort(df_all_obs = df_all_obs, groups = groups,
+    df_all_obs <- reorder_pca(df_all_obs = df_all_obs, groups = groups,
       nas_first = nas_first)
     plt <- plt + geom_point(do.call('aes_string', aes_param), df_all_obs) +
       scale_shape_discrete(name = 'Observation',
@@ -266,15 +266,15 @@ all_obs <- c(
   # check availability of all vars
 all_vars <- c(
   check_availability(vars,
-    qb_pcafort[qb_pcafort$PCA_VARTYPE == "VAR", 'PCA_VARNAME'],
+    pca[pca$PCA_VARTYPE == "VAR", 'PCA_VARNAME'],
     'active variables'),
   check_availability(vars_sup,
-    qb_pcafort[qb_pcafort$PCA_VARTYPE == "VAR_SUP", 'PCA_VARNAME'],
+    pca[pca$PCA_VARTYPE == "VAR_SUP", 'PCA_VARNAME'],
     'suppl. variables'))
 
   # Add variables if requested
   if (length(all_vars)) {
-    df_all_vars <- qb_pcafort[match(c('Explained_variance', all_vars), qb_pcafort$PCA_VARNAME), ]
+    df_all_vars <- pca[match(c('Explained_variance', all_vars), pca$PCA_VARNAME), ]
     # get scale for active vars
     if(obs || obs_sup) {
        circle_sf <-  max(abs(df_all_obs[, names_axe]))
@@ -301,7 +301,7 @@ all_vars <- c(
 #'
 #' Jul 9, 2014
 #'
-#' @param pcafort qb_pca or qb_pcafort object
+#' @param pca qb_pca or pca object
 #' @param axes pcs to combine
 #' @param max_vars max. number of vars to display
 #' @param ... Passed to ggplot_pca
@@ -309,41 +309,41 @@ all_vars <- c(
 #' @return list of pca ggplots
 #'
 #' @author tcharlon
-get_pca_panels <- function(pcafort, axes = 1:4, groups = NULL, max_vars = 0L,
+get_pca_panels <- function(pca, axes = 1:4, groups = NULL, max_vars = 0L,
   ...) {
 
   check_fx_args(axes = '!I+', max_vars = '!I1')
 
   stopifnot(length(axes) > 2)
 
-  # dispatch on qb_pca and qb_pcafort
-  if (inherits(pcafort, 'qb_pca')) {
-    pcafort <- pca_fortify(pcafort)
-  } else if (!inherits(pcafort, 'qb_pcafort')) {
-    stop('qb_pcafort must be either a qb_pca or a qb_pcafort object')
+  # dispatch on qb_pca and pca
+  if (inherits(pca, 'qb_pca')) {
+    pca <- pca_fortify(pca)
+  } else if (!inherits(pca, 'pca')) {
+    stop('pca must be either a qb_pca or a pca object')
   }
 
   # Get PC plots
   df_axes <- combn(axes, 2)
-  vars_idxs <- which(pcafort$PCA_VARTYPE == 'VAR')
+  vars_idxs <- which(pca$PCA_VARTYPE == 'VAR')
   seq_vars <- seq_len(min(max_vars, length(vars_idxs)))
   plots <- apply(df_axes, 2, function(axes) {
       axes <- as.vector(axes)
       pcs <- paste0('PC', axes)
-      df_vars <- abs(pcafort[vars_idxs, pcs])
+      df_vars <- abs(pca[vars_idxs, pcs])
       ord_vars_idxs <- apply(df_vars, 2, order, decreasing = TRUE)[seq_vars, ]
       signif_vars_idxs <- vars_idxs[ord_vars_idxs]
       vars_idxs <- setdiff(vars_idxs, signif_vars_idxs)
-      if (length(vars_idxs)) pcafort <- pcafort[-vars_idxs, ]
-      ggplot_pca(pcafort, groups, axes, white_panel = FALSE,
+      if (length(vars_idxs)) pca <- pca[-vars_idxs, ]
+      ggplot_pca(pca, groups, axes, white_panel = FALSE,
           vars = TRUE, scale_sdev = TRUE, ...) +
         labs(x = pcs[1], y = pcs[2]) +
         theme(axis.ticks = element_blank(), axis.text = element_blank())
     })
 
   # Set title and legend
-  n_obs <- sum(pcafort$PCA_VARTYPE == 'OBS')
-  n_vars <- sum(pcafort$PCA_VARTYPE == 'VAR')
+  n_obs <- sum(pca$PCA_VARTYPE == 'OBS')
+  n_vars <- sum(pca$PCA_VARTYPE == 'VAR')
   plots[[1]] <- plots[[1]] +
     theme(legend.position = 'top') +
     guides(col = guide_legend(nrow = 2))
@@ -429,7 +429,7 @@ plot_pca_pairs <- function(axes, ..., max_vars = 0L, ellipses = TRUE) {
   plot(grob_pca_panels(ggplts))
 }
 
-reorder_pcafort <- function(df_all_obs, nas_first, groups) {
+reorder_pca <- function(df_all_obs, nas_first, groups) {
 
   if (nas_first && !is.null(groups) && any(is.na(df_all_obs[[groups]]))) {
     nas <- which(is.na(df_all_obs[[groups]]))
@@ -439,13 +439,13 @@ reorder_pcafort <- function(df_all_obs, nas_first, groups) {
   df_all_obs
 }
 
-create_pca_axis_labels <- function(qb_pcafort, pc_variance = TRUE, axes,
+create_pca_axis_labels <- function(pca, pc_variance = TRUE, axes,
   names_axe = paste0("PC", axes)) {
 
   #fix note during checks
   PCA_VARNAME <- NULL
 
-  exp_var   <- dplyr::filter(qb_pcafort, PCA_VARNAME == 'Explained_variance_percent')
+  exp_var   <- dplyr::filter(pca, PCA_VARNAME == 'Explained_variance_percent')
   axis_labs <- if (pc_variance && nrow(exp_var)) {
       paste0(names_axe, ' (', exp_var[axes], '% explained var.)')
     } else {
@@ -457,9 +457,6 @@ create_pca_axis_labels <- function(qb_pcafort, pc_variance = TRUE, axes,
 
 stat_ellipse <- function(mapping = NULL, data = NULL, geom = "polygon",
   position = "identity", alpha = 0.1, ...) {
-  # Karl: make sure it is in search path, because even if it is in Depends, if it is
-  # loaded via another package, the Depends are not put in search path
-  # and proto is need for the StatEllipse class to work
   library(proto)
 
   ### Stat is not exported. Let's trick R CMD check

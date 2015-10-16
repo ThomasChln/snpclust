@@ -4,10 +4,10 @@
 \alias{get_pca_panels}
 \title{Get list of pc plots}
 \usage{
-get_pca_panels(pcafort, axes = 1:4, groups = NULL, max_vars = 0L, ...)
+get_pca_panels(pca, axes = 1:4, groups = NULL, max_vars = 0L, ...)
 }
 \arguments{
-\item{pcafort}{qb_pca or qb_pcafort object}
+\item{pca}{qb_pca or pca object}
 
 \item{axes}{pcs to combine}
 

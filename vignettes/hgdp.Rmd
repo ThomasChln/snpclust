@@ -40,9 +40,9 @@ The results of PCA applied to the quality controlled dataset are stored in a lon
 Here we see that samples are grouped by country of origin.
 
 ```{r}
-ggplot_pca(qb_pcafort = snpclust_object$pca, groups = 'population', ellipses = TRUE)
-plot_pca_pairs(axes = 1:3, pcafort = snpclust_object$pca, groups = 'population')
-plot_pca_pairs(axes = 4:6, pcafort = snpclust_object$pca, groups = 'population')
+ggplot_pca(pca = snpclust_object$pca, groups = 'population', ellipses = TRUE)
+plot_pca_pairs(axes = 1:3, pca = snpclust_object$pca, groups = 'population')
+plot_pca_pairs(axes = 4:6, pca = snpclust_object$pca, groups = 'population')
 ```
 
 # SNPs contributions to Principal Components (PCs)
@@ -50,7 +50,7 @@ plot_pca_pairs(axes = 4:6, pcafort = snpclust_object$pca, groups = 'population')
 For each PC, the absolute SNP contributions are displayed. SNPs are displayed by chromosome and position.
 
 ```{r}
-ggplot_manhat(df_pca = snpclust_object$pca, gdata = snpclust_object$gdata) 
+ggplot_manhat(pca = snpclust_object$pca, gdata = snpclust_object$gdata) 
 ```
 
 # SNPs selection by Gaussian mixture models
@@ -59,7 +59,7 @@ The Gaussian mixture models select SNPs above the background noise of other SNPs
 Here the selected SNPs are colored in red.
 
 ```{r}
-ggplot_selection(l_peaks = snpclust_object$peaks, df_pca = snpclust_object$pca) 
+ggplot_selection(peaks = snpclust_object$peaks, pca = snpclust_object$pca) 
 ```
 
 # PCA on the SNPClust selected dataset
@@ -67,7 +67,7 @@ ggplot_selection(l_peaks = snpclust_object$peaks, df_pca = snpclust_object$pca)
 When PCA is applied on the SNPClust selected dataset, samples are not grouped by geographic origin anymore.
 
 ```{r}
-ggplot_pca(qb_pcafort = snpclust_object$features_pca, groups = 'population', ellipses = TRUE)
-plot_pca_pairs(axes = 1:3, pcafort = snpclust_object$features_pca, groups = 'population')
-plot_pca_pairs(axes = 4:6, pcafort = snpclust_object$features_pca, groups = 'population')
+ggplot_pca(pca = snpclust_object$features_pca, groups = 'population', ellipses = TRUE)
+plot_pca_pairs(axes = 1:3, pca = snpclust_object$features_pca, groups = 'population')
+plot_pca_pairs(axes = 4:6, pca = snpclust_object$features_pca, groups = 'population')
 ```

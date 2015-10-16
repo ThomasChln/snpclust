@@ -92,7 +92,7 @@ pca_fortify <- function(qb_pca,
       sup = sup_vars)
   )
   # type the data.frame
-  class(df_fort) <- c("qb_pcafort", "data.frame")
+  class(df_fort) <- c("pca", "data.frame")
   df_fort
 }
 

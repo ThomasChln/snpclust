@@ -4,11 +4,11 @@
 \alias{ggplot_manhat}
 \title{ggplot_manhat}
 \usage{
-ggplot_manhat(df_pca, gdata, axes = paste0("PC", 1:10), byposition = TRUE,
+ggplot_manhat(pca, gdata, axes = paste0("PC", 1:10), byposition = TRUE,
   n_points = 2000, ncol = 5, ...)
 }
 \arguments{
-\item{df_pca}{QB_pcafort data frame, requires variable contributions}
+\item{pca}{PCA data frame, requires variable contributions}
 
 \item{gdata}{GenotypeData object with snpIDs matching df_vars column
 PCA_VARNAME}

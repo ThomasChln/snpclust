@@ -62,8 +62,8 @@ snpclust <- function(tar_paths, gds, subsets = '', n_axes = 1e2,
 .snpclust_qc_pca <- function(subset, gdata, n_axes, n_cores, ...) {
   gdata <- .genotype_data_subset(subset, gdata)
   qced_gdata <- snprelate_qc(gdata, ...)
-  pcafort <- snprelate_pca(qced_gdata$gdata, n_axes, n_cores)
-  list(pca = pcafort, qc = qced_gdata$df_qc, gdata = qced_gdata$gdata)
+  pca <- snprelate_pca(qced_gdata$gdata, n_axes, n_cores)
+  list(pca = pca, qc = qced_gdata$df_qc, gdata = qced_gdata$gdata)
 } 
 
 get_features_pca <- function(idx, snpclust_obj) {
