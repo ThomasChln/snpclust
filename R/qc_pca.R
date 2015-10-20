@@ -5,22 +5,6 @@
   rbind(df_qc, df_qc_new_line)
 }
 
-###############################################################################
-#' snprelate_qc
-#'
-#' Oct 10, 2014
-#'
-#' @param gdata       GenotypeData object
-#' @param sample_nas  Missing values ratio threshold for samples
-#' @param snp_nas     Missing values ratio threshold for SNPs
-#' @param maf         MAF ratio threshold
-#' @param tsnp        LD threshold
-#' @param ibs         Identity by state threshold
-#' @param n_cores     Number of cores to use
-#' @return list of gdata and QC data frame
-#'
-#' @author tcharlon
-#' @export
 snprelate_qc <- function(gdata, sample_nas = .03, snp_nas = .01, maf = .05,
   tsnp = .8, ibs = 1, n_cores = 2) {
 
@@ -59,17 +43,6 @@ snprelate_qc <- function(gdata, sample_nas = .03, snp_nas = .01, maf = .05,
   list(gdata = gdata, df_qc = df_qc)
 }
 
-###############################################################################
-#' snprelate_pca
-#'
-#' Oct 10, 2014
-#'
-#' @param gdata   GenotypeData object
-#' @param n_axes  Number of PCs to fetch
-#' @param n_cores Number of cores
-#' @return pca
-#'
-#' @author tcharlon
 snprelate_pca <- function(gdata, n_axes = 32, n_cores = 2) {
   stopifnot(inherits(gdata, 'GenotypeData'))
 
@@ -120,17 +93,6 @@ snprelate_pca <- function(gdata, n_axes = 32, n_cores = 2) {
   df_pca
 }
 
-
-###############################################################################
-#' Impute nas by sampling existing values
-#'
-#' Jun 17, 2014
-#'
-#' @param data matrix with nas
-#' @return matrix with imputed values
-#'
-#' @author tcharlon
-#' @export
 sample_impute <- function(data) {
   stopifnot(is.matrix(data))
   na_idxs <- which(colSums(is.na(data)) != 0)
@@ -169,27 +131,6 @@ df_rbind_all <- function(...,  use_row_names = FALSE) {
   df
 }
 
-#' wrapper for snpgdsLDpruning to select Tag SNPs
-#'
-#' The tagged snp set is (by sliding window) representative and
-#' strongly not redundant
-#'
-#' will use the "r" method
-#' #' N.B: it is not yet parallelized
-#'
-#' @param gdata		      a GenotypeData object
-#' @param window_size	  max number of SNPs in LD window
-#' @param window_length	max length in kb of the window
-#' @param min_r2			  minimum r2 value to report
-#' @param snps_idx	    indices of snps to use
-#' @param scans_idx	    indices of scans to use
-#' @param threads       the number of threads to use. currently ignored
-#' @param quiet         whether to be quiet
-#' @inheritParams SNPRelate::snpgdsLDpruning
-#' @param ...           forwarded to \code{\link[SNPRelate]{snpgdsLDpruning}}
-#'
-#' @return  a list of SNP IDs stratified by chromosomes.
-#' @author karl
 snprelate_ld_select <- function(gdata,
   window_length = 500L,
   min_r2,

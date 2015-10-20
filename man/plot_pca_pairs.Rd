@@ -7,16 +7,17 @@
 plot_pca_pairs(axes, ..., max_vars = 0L, ellipses = TRUE)
 }
 \arguments{
-\item{axes}{pcs to combine}
+\item{axes}{Two principal component axes to plot.
+Default: 1:2}
 
 \item{...}{Passed to get_pca_panels}
 
-\item{max_vars}{max. number of vars to display}
+\item{max_vars}{Number of variables to display}
 
 \item{ellipses}{Should ellipses be plotted ? Not used if groups is NULL.
 Default: FALSE}
 }
 \description{
-Plot PCA pairs
+Plots the pair combinations of Principal Components.
 }
 

@@ -43,7 +43,7 @@ fetch_reduced_hgdp <- function(paths, zippaths, nsnp = 2e3, nscan = -1, only_eu 
 }
 
 #' save_hgdp_as_gds
-#' @param paths    Paths of the zip and txt files
+#' @param paths    Paths of the zip, txt, and gds files
 #' @param zippaths Paths of the genotype and snp files in the zip
 #' @return Path of the saved gds file
 #' @export
@@ -93,35 +93,6 @@ gds_to_bedtargz <- function(gds, tarpath = gsub('gds$', 'tar.gz', gds)) {
   SNPRelate::snpgdsGDS2BED(gdsobj, tarname, verbose = FALSE)
 }
 
-###############################################################################
-#' actg_tsv_to_gdata
-#'
-#' Converts TSV files (geno, SNPs, scans) with genotypes as ACTG characters
-#' to GWASTools GenotypeData.
-#' Jun 4, 2014
-#'
-#' @param geno_path     Path of genotype text tsv file.
-#'                      First line is scan ids and first column is snps ids.
-#'                      NAs are specified via na_encoding parameter.
-#'                      Header is managed automatically by data.table::fread.
-#' @param scans_path    Path of scans text tsv file.
-#'                      Header is managed automatically by data.table::fread.
-#' @param scans_col_map Character vector mapping the columns of the scans file,
-#'                      the index in the vector is the column index in the text
-#'                      file, the characters are the names for the gds file
-#'                      NAs specify undesirable columns.
-#'                        Required characters: 'scan_id'
-#' @param snps_path     Path of snps text tsv file
-#'                      Header is managed automatically by data.table::fread.
-#' @param snps_col_map  Character vector mapping the columns of the snpss file,
-#'                      the index in the vector is the column index in the text
-#'                      file, the characters are the names for the gds file.
-#'                      NAs specify undesirable columns.
-#'                        Required characters: probe_id, chromosome, position
-#' @param na_encoding   Vector of characters encoding NAs in genotype file,
-#' @return GenotypeData object
-#'
-#' @author tcharlon
 actg_tsv_to_gdata <- function(geno_path, scans_path,
   scans_col_map = 'scan_id', snps_path,
   snps_col_map = c('probe_id', 'chromosome', 'position'),
@@ -215,18 +186,6 @@ txt_snps_to_df <- function(path, col_map) {
   cbind(snpID = seq_along(data[[1]]), data, alleleA = NA, alleleB = NA)
 }
 
-###############################################################################
-#' build_gwastools
-#'
-#' wrapper for GWASTools functions to build GenotypeData object
-#' Aug 2, 2014
-#'
-#' @param geno genotype data frame
-#' @param scans scans data frame
-#' @param snps snps data frame
-#' @return genotype data object
-#'
-#' @author tcharlon
 build_gwastools <- function(geno, scans, snps) {
   stopifnot(inherits(geno, 'matrix'))
 
@@ -243,17 +202,6 @@ build_gwastools <- function(geno, scans, snps) {
   GenotypeData(geno, snps, scans)
 }
 
-###############################################################################
-#' bed_targz_to_gds
-#'
-#' Untar and call snpgdsBED2GDS
-#' Sep 24, 2014
-#'
-#' @param tarpath path of input tar file
-#' @param gdspath path of output gds file
-#' @return NULL
-#'
-#' @author tcharlon
 bed_targz_to_gds <- function(tarpath, gdspath) {
   check_fx_args(tarpath = '!C1', gdspath = '!C1')
   die_unless(file.exists(tarpath), paste('File does not exist:', tarpath))

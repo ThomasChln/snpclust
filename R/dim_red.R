@@ -80,19 +80,6 @@ haplo_features <- function(m_data, order_idxs = FALSE) {
   }
 }
 
-###############################################################################
-#' haplo_mcmc
-#'
-#' Get haplotypes with MCMC (linear complexity, multithreaded)
-#' Jan 5, 2015
-#'
-#' @param path              BED (optionally tar gz) file path
-#' @param probe_ids         Probe ids of SNPs to model
-#' @param n_cores           Number of cores to use
-#' @return Numeric matrix (haplotypes x frequency,snps,scans)
-#'
-#' @author tcharlon
-#' @export
 haplo_mcmc <- function(path, probe_ids, n_cores = 1) {
   if (system('plink', ignore.stdout = TRUE) == 127) stop('plink not found')
   if (system('shapeit') == 127) stop('shapeit not found')

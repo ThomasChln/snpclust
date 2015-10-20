@@ -28,6 +28,6 @@ principal component}
 ggplot
 }
 \description{
-ggplot_manhat
+Displays Manhattan-like plot for SNPs contributions to Principal Components
 }
 

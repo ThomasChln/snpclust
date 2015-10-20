@@ -2,6 +2,9 @@
 ###############################################################################
 #' ggplot_selection
 #'
+#' Displays the selection of SNPs for each principal component. Peaks is a list
+#' of variable indexes corresponding to the pca object.
+#'
 #' @param peaks    List returned by peak_selection
 #' @param pca      PCA data frame, requires variable contributions
 #                  with columns PCA_VARNAME and axes
@@ -54,6 +57,8 @@ ggplot_selection <- function(peaks, pca, axes = paste0('PC', 1:10),
 
 ###############################################################################
 #' ggplot_manhat
+#'
+#' Displays Manhattan-like plot for SNPs contributions to Principal Components 
 #'
 #' @param gdata      GenotypeData object with snpIDs matching df_vars column
 #'                   PCA_VARNAME
@@ -296,19 +301,6 @@ all_vars <- c(
   plt + theme_bw()
 }
 
-###############################################################################
-#' Get list of pc plots
-#'
-#' Jul 9, 2014
-#'
-#' @param pca qb_pca or pca object
-#' @param axes pcs to combine
-#' @param max_vars max. number of vars to display
-#' @param ... Passed to ggplot_pca
-#' @inheritParams ggplot_pca
-#' @return list of pca ggplots
-#'
-#' @author tcharlon
 get_pca_panels <- function(pca, axes = 1:4, groups = NULL, max_vars = 0L,
   ...) {
 
@@ -368,17 +360,6 @@ get_pca_panels <- function(pca, axes = 1:4, groups = NULL, max_vars = 0L,
   plots[t(position_matrix)]
 }
 
-###############################################################################
-#' Plot combinations of PCs, with variance contributions
-#'
-#' Jun 22, 2014
-#'
-#' @param plots       List of ggplots
-#' @param only_panels Logical, returns only the plot panels
-#' @param legend      Should the legend be kept ?
-#' @return Gtable
-#'
-#' @author tcharlon
 grob_pca_panels <- function(plots, only_panels = TRUE, legend = FALSE) {
   stopifnot(inherits(plots, 'list'))
 
@@ -418,8 +399,11 @@ grob_pca_panels <- function(plots, only_panels = TRUE, legend = FALSE) {
 
 #' Plot PCA pairs
 #'
+#' Plots the pair combinations of Principal Components.
+#'
 #' @inheritParams get_pca_panels
 #' @inheritParams ggplot_pca
+#' @param max_vars Number of variables to display
 #' @param ... Passed to get_pca_panels
 #' @return NULL
 #' @export

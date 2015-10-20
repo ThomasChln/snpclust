@@ -27,6 +27,7 @@ principal component}
 ggplot
 }
 \description{
-ggplot_selection
+Displays the selection of SNPs for each principal component. Peaks is a list
+of variable indexes corresponding to the pca object.
 }
 

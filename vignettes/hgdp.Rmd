@@ -11,7 +11,7 @@ SNPClust is demonstrated here on a small subset of the Human Genome Diversity Pr
 library(snpclust)
 ```
 
-The HGDP files are first converted to the Genomic Data Structure (GDS) format (cf. R package gdsfmt).
+The HGDP files are first converted to the snpgds format (cf. R package SNPRelate).
 
 ```{r, message = FALSE, warning = FALSE}
 gds_path <- save_hgdp_as_gds()

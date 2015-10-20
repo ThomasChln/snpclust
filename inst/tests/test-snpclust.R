@@ -10,7 +10,7 @@ context('Dim. red.')
 ids <- 1:10
 hgdp_gdata <- snpclust:::load_gds_as_genotype_data(gds)
 test_haplo_mcmc <- function() {
-  m_haplo <- snpclust::haplo_mcmc(tar, getSnpVariable(hgdp_gdata, 'probe_id', ids))
+  m_haplo <- snpclust:::haplo_mcmc(tar, getSnpVariable(hgdp_gdata, 'probe_id', ids))
   expect_is(m_haplo, 'matrix')
   expect_is(m_haplo[1], 'numeric')
   expect_true(!any(is.na(m_haplo)))
@@ -48,7 +48,7 @@ context('ggplots')
 
 test_ggplots <- function() {
   plts <- lapply(list(
-      ggplot_pca(snpclust_object$pca, 'population', ellipses = TRUE),
+      snpclust:::ggplot_pca(snpclust_object$pca, 'population', ellipses = TRUE),
       ggplot_manhat(pca = snpclust_object$pca, gdata = snpclust_object$gdata),
       ggplot_selection(peaks = snpclust_object$peaks, pca = snpclust_object$pca)
     ), ggplot2::ggplotGrob) 
@@ -62,13 +62,13 @@ context('misc qc')
 test_sample_impute <- function() {
   num_mat <- matrix(1:16, 4)
   num_mat[2:3, ] <- matrix(rep(NA, 8), 2)
-  num_mat <- sample_impute(num_mat)
+  num_mat <- snpclust:::sample_impute(num_mat)
   apply(num_mat, 2, function(column) {
       expect_true(all(column[2:3] %in% column[c(1,4)]))
     })
   char_mat <- matrix(letters[1:16], 4)
   char_mat[2:3, ] <- matrix(rep(NA, 8), 2)
-  char_mat <- sample_impute(char_mat)
+  char_mat <- snpclust:::sample_impute(char_mat)
   apply(char_mat, 2, function(column) {
       expect_true(all(column[2:3] %in% column[c(1,4)]))
     })

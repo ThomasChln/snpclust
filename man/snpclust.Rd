@@ -37,7 +37,7 @@ List of slots:
         slots corresponding to each subsets.
 }
 \description{
-Feb 10, 2015
+Snpclust performs unsupervised feature selection and summarization based on Principal Component Analysis, Gaussian Mixture Models, and Markov Chain Monte Carlo.
 }
 \author{
 tcharlon

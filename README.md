@@ -23,7 +23,7 @@ SNPClust is developed for the reclassification of Systemic Autoimmune Diseases b
 
 ## Usage
 
-The snpclust function is the main function and can be called on a Genomic Data Structure file path.
+The snpclust function is the main function and can be called on a snpgds file path from the [R package SNPRelate](http://www.bioconductor.org/packages/release/bioc/html/SNPRelate.html).
 Results can be displayed with several plots. A demo is available in the *SNPClust applied to Europeans* HTML vignette.
 
 ## License

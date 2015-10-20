@@ -2,7 +2,7 @@
 ################################################################################
 #' snpclust
 #'
-#' Feb 10, 2015
+#' Snpclust performs unsupervised feature selection and summarization based on Principal Component Analysis, Gaussian Mixture Models, and Markov Chain Monte Carlo.
 #'
 #' @param tar_paths   Path(s) of tar.gz files containing PLINK binary files.
 #'                    If missing, files are generated with the gds file.

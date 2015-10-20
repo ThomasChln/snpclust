@@ -10,7 +10,7 @@ save_hgdp_as_gds(paths = file.path(system.file("extdata", package =
   "HGDP_Map.txt")))
 }
 \arguments{
-\item{paths}{Paths of the zip and txt files}
+\item{paths}{Paths of the zip, txt, and gds files}
 
 \item{zippaths}{Paths of the genotype and snp files in the zip}
 }
