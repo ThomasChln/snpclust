@@ -1,0 +1,27 @@
+Package: snpclust
+Title: Single Nucleotide Polymorphism unsupervised clustering
+Version: 0.1
+Author: Thomas Charlon <thomas.charlon@quartz.bio>, Karl Forner <karl.forner@quartz.bio>, Alessandro Di Cara <alessandro.dicara@quartz.bio>, Jerome Wojcik <jerome.wojcik@quartz.bio>
+Maintainer: Thomas Charlon <thomas.charlon@quartz.bio>
+Description: Unsupervised feature selection based on Principal Component Analysis and Gaussian Mixture Models developed for Systemic Autoimmune Diseases in the PRECISESADS project.
+Imports:
+    gdsfmt,
+    ggplot2,
+    gtable,
+    mclust
+Depends:
+    R (>= 2.15),
+    GWASTools (>= 1.10.1)
+Suggests:
+    data.table,
+    dplyr,
+    grid,
+    knitr,
+    magrittr,
+    methods,
+    plyr,
+    proto,
+    reshape2,
+    SNPRelate
+VignetteBuilder: knitr
+License: GPL-3
