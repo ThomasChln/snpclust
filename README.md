@@ -19,7 +19,8 @@ devtools::install_github('ThomasChln/snpclust', build_vignettes = TRUE)
 
 ## Motivation
 
-SNPClust is developed for the reclassification of Systemic Autoimmune Diseases based on genetic markers instead of clinical criteria for the European-funded project [PRECISESADS](http://precisesads.eu).
+SNPClust is developed for the reclassification of Systemic Autoimmune Diseases (SADs) based on genetic markers instead of clinical criteria for the European-funded project [PRECISESADS](http://precisesads.eu).
+
 The results of the application to SADs were presented in the [Genome-wide unsupervised clustering](http://f1000research.com/posters/1098306) poster at the [Basel Computational Biology Conference](http://www.bc2.ch) in June 2015.
 
 ## Usage
