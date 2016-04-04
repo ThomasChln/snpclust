@@ -6,7 +6,7 @@
 }
 
 snprelate_qc <- function(gdata, sample_nas = .03, snp_nas = .01, maf = .05,
-  tsnp = .8, ibs = 1, n_cores = 2) {
+  tsnp = .8, ibs = .99, n_cores = 2) {
 
   stopifnot(inherits(gdata, 'GenotypeData'))
   l_ids_original <- list(getScanID(gdata), getSnpID(gdata))
@@ -48,7 +48,8 @@ snprelate_pca <- function(gdata, n_axes = 32, n_cores = 2) {
 
   # get pca
   gds <- request_snpgds_file(gdata)$snpgds
-  l_ids <- lapply(paste0('get', c('Scan', 'Snp'), 'ID'), do.call, list(gdata))
+  l_ids <- lapply(paste0('get', c('Scan', 'Snp'), 'ID'), do.call, list(gdata),
+    envir = getNamespace('GWASTools'))
   n_axes <- min(c(nscan(gdata), nsnp(gdata)) - 1, n_axes)
   pca <- SNPRelate::snpgdsPCA(gds, l_ids[[1]], l_ids[[2]], num.thread = n_cores,
     eigen.cnt = n_axes, verbose = FALSE)
