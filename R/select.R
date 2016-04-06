@@ -9,7 +9,7 @@ peak_selection <- function(df_vars, chromosomes, n_cores = 2) {
       df_abs_vars[[peak_id]]
     })
   names(l_vars) <- names(df_abs_vars)
-  l_peaks <- mclapply(l_vars, .peaks_with_gmm, mc.cores = n_cores)
+  l_peaks <- parallel::mclapply(l_vars, .peaks_with_gmm, mc.cores = n_cores)
 
   l_peaks[sapply(l_peaks, length) != 0]
 }

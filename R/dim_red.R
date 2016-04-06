@@ -1,6 +1,6 @@
 
 .haplo_features <- function(l_haplo, n_cores) {
-  l_feats <- mclapply(l_haplo, function(haplo) {
+  l_feats <- parallel::mclapply(l_haplo, function(haplo) {
       (if (is.null(dim(haplo))) identity else haplo_features)(haplo)
     }, mc.cores = n_cores)
   attributes(l_feats) <- attributes(l_haplo)
@@ -61,7 +61,7 @@ haplo_features <- function(m_data, order_idxs = FALSE) {
   l_peaks <- lapply(l_peaks,
     function(peaks) list(df_snp$probe_id[peaks], peaks))
   l_haplo <- list()
-  l_haplo[small_peaks] <- mclapply(l_peaks[small_peaks], .get_haplos,
+  l_haplo[small_peaks] <- parallel::mclapply(l_peaks[small_peaks], .get_haplos,
     1, 'bedfile', mc.cores = n_cores)
   l_haplo[!small_peaks] <- lapply(l_peaks[!small_peaks], .get_haplos,
     n_cores, 'bedfile')

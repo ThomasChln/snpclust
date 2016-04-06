@@ -32,7 +32,7 @@ snpclust <- function(tar_paths, gds, subsets = '', n_axes = 1e2,
   n_cores = 2, ...) {
 
   if (missing(tar_paths)) {
-    tar_paths <- gds_to_bedtargz(gds) 
+    tar_paths <- gds_to_bedtargz(normalizePath(gds))
     on.exit(file.remove(tar_paths))
   }
 
@@ -116,12 +116,14 @@ transitive_tagsnp <- function(m_data, r2 = .8) {
   df_snp <- getSnpVariable(gdata, c('chromosome', 'position', 'probe_id'),
     snp_ids)
   df_snp$probe_id <- as.character(df_snp$probe_id)
+
   # get peaks
   if (!n_pcs) n_pcs <- length(grep('PC[0-9]', colnames(df_vars)))
   df_abs_vars <- abs(df_vars[paste0('PC', seq_len(n_pcs))])
   l_peaks <- peak_selection(df_abs_vars, df_snp$chromosome, n_cores)
   l_peaks_copy <- l_peaks
   l_peaks <- unlist(lapply(l_peaks, .separate_peaks, df_snp), FALSE)
+
   # Untar and impute bed, then estimate haplotypes and get SNPs
   df_obs <- subset(df_pca, PCA_VARTYPE == 'OBS')
   scan_ids <- as.numeric(gsub('OBS_', '', df_obs$PCA_VARNAME))
@@ -129,6 +131,7 @@ transitive_tagsnp <- function(m_data, r2 = .8) {
   .untar_impute_bed(tar_paths, df_snp, l_peaks, scan_ids)
   l_haplo <- .estimate_haplotypes(l_peaks, n_cores, df_snp)
   l_haplo <- .add_SNPs(l_haplo, df_vars, gdata, scan_ids)
+
   # get SNPs in haplotypes and maximum contributions
   pcs <- sapply(strsplit(names(l_peaks), '[.]'), '[', 1)
   contribs <- sapply(seq_along(pcs),
