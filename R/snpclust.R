@@ -76,7 +76,7 @@ get_features_pca <- function(idx, snpclust_obj) {
     snpclust_obj$gdata[[idx]]@scanAnnot@data[obs_ids, ],
     stringsAsFactors = FALSE)
 
-  get_pca(df_feats, 'id', vars = colnames(m_feats))
+  pca_fortify(get_pca(df_feats, 'id', vars = colnames(m_feats)))
 }
 
 ###############################################################################
