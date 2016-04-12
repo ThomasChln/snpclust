@@ -81,7 +81,7 @@ get_features_pca <- function(idx, snpclust_obj) {
 
 ###############################################################################
 transitive_tagsnp <- function(m_data, r2 = .8) {
-  vars_info <- strsplit(colnames(m_data), 'Chr_|.Loc_|_Mb')
+  vars_info <- strsplit(tolower(colnames(m_data)), 'chr_|.loc_|_mb')
   chrs <- sapply(vars_info, '[', 2)
   l_data <- lapply(unique(chrs), function(chr) {
       chr_idx <- which(chrs == chr)
