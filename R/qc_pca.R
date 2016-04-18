@@ -58,7 +58,7 @@ snprelate_pca <- function(gdata, n_axes = 32, n_cores = 2) {
   name_axes <- paste0('PC', seq_axes)
 
   # get variance
-  var <- pca$eigenval[seq_axes] / sum(pca$eigenval)
+  var <- pca$eigenval[seq_axes] / sum(pca$eigenval, na.rm = TRUE)
   var_percent <- round(var * 100)
   df_variance <- data.frame(matrix(c(var, var_percent), 2, byrow = TRUE),
     PCA_VARNAME = c('Explained_variance', 'Explained_variance_percent'),
