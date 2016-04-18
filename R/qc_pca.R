@@ -34,7 +34,7 @@ snprelate_qc <- function(gdata, sample_nas = .03, snp_nas = .01, maf = .05,
 
   if (!is.na(tsnp)) {
     l_ids[[2]] <- unlist(SNPRelate::snpgdsLDpruning(gds, l_ids[[1]], l_ids[[2]],
-        ld.threshold = tsnp, method = 'r', verbose = FALSE))
+        ld.threshold = sqrt(tsnp), method = 'r', verbose = FALSE))
     df_qc <- .rbind_qc(df_qc, 'TagSNP', tsnp, l_ids)
   }
   l_ids <- lapply(1:2, function(i) match(l_ids[[i]], l_ids_original[[i]]))
