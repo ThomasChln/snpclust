@@ -49,7 +49,7 @@
   list(geno = m_geno, scans = scans, snps = snps)
 }
 
-import_gds <- function(gdsname) {
+import_gds <- function(dirpath, gdsname) {
   path <- grep('bed', list.files(dirpath, full.names = TRUE), value = TRUE)
   system(paste('plink --bfile', gsub('.bed$', '', path),
       '--recode --tab --out pedfile'))
