@@ -29,7 +29,7 @@ haplo_features <- function(m_data, order_idxs = FALSE) {
   indiv_haplos[obs_match]
 }
 
-.merge_haplotypes <- function(m_snps, max_n_snps = 1e2, n_mixtures = 2:3) {
+.merge_haplotypes <- function(m_snps, max_n_snps = 1e2, n_mixtures = 2) {
   # estimate 2 gaussian mixtures, subset SNPs for performance
   if (ncol(m_snps) > max_n_snps) {
     m_snps <- m_snps[, seq(1, ncol(m_snps), length = max_n_snps)]
