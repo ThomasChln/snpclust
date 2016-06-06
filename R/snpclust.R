@@ -68,7 +68,7 @@ snpclust <- function(tar_paths, gds, subsets = '', n_axes = 1e2,
 
 get_features_pca <- function(idx, snpclust_obj) {
   m_feats <- snpclust_obj$features[[idx]]
-  m_feats <- t(t(scale(m_feats)) * attr(m_feats, 'weights'))
+  m_feats <- t(t(.qb_scale(m_feats)) * attr(m_feats, 'weights'))
   m_feats <- transitive_tagsnp(sample_impute(m_feats))
   obs_ids <- getScanID(snpclust_obj$gdata[[idx]])
   df_feats <- cbind.data.frame(m_feats, id = paste(1:nrow(m_feats)),
@@ -175,3 +175,13 @@ transitive_tagsnp <- function(m_data, r2 = .8) {
 
   l_haplo
 }
+
+.qb_scale <- function(data) {
+  data <- as.matrix(data)
+  polymorphs <- get_polymorphic_cols(data)
+  data[, polymorphs] <- scale(data[, polymorphs])
+  data[, !polymorphs] <- 0
+
+  data
+}
+
