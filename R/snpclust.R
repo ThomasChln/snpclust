@@ -185,3 +185,7 @@ transitive_tagsnp <- function(m_data, r2 = .8) {
   data
 }
 
+get_polymorphic_cols <- function(data) {
+  cols <- apply(as.matrix(data), 2, function(vect) var(na.omit(vect)))
+  as.logical(cols)
+}
