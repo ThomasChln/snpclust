@@ -179,10 +179,9 @@ transitive_tagsnp <- function(m_data, r2 = .8) {
 .qb_scale <- function(data) {
   data <- as.matrix(data)
   polymorphs <- get_polymorphic_cols(data)
-  data[, polymorphs] <- scale(data[, polymorphs])
-  data[, !polymorphs] <- 0
+  data <- data[, polymorphs]
 
-  data
+  scale(data)
 }
 
 get_polymorphic_cols <- function(data) {
