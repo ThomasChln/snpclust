@@ -190,7 +190,7 @@ snps_hla <- function(gdata) {
   }
   scans_idx <- switch(set,
     no_controls = which(gdata@scanAnnot@data$phenotype != 'Control'),
-    getScanID(gdata))
+    seq_len(GWASTools::nscan(gdata)))
 
   genotype_data_subset(gdata, snps_idx, scans_idx)
 }
