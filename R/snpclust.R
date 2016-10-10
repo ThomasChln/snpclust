@@ -47,6 +47,7 @@ snpclust <- function(tar_paths, gds, subsets = '', n_axes = 1e2,
   haplos <- lapply(snpclust_obj$pca, .snpclust_features, gdata, tar_paths, 0,
     n_cores)
   snpclust_obj$peaks <- lapply(haplos, attr, 'peaks')
+  snpclust_obj$max_contributor <- lapply(haplos, attr, 'max_contributor')
   snpclust_obj$features <- lapply(haplos, .haplo_features, n_cores)
   snpclust_obj$features <- lapply(seq_along(subsets), .haplo_weights,
     snpclust_obj)
