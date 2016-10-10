@@ -130,9 +130,9 @@ transitive_tagsnp <- function(m_data, r2 = .8) {
 
   # Untar and impute bed, then estimate haplotypes and get SNPs
   df_obs <- subset(df_pca, PCA_VARTYPE == 'OBS')
-  scan_ids <- match(as.numeric(gsub('OBS_', '', df_obs$PCA_VARNAME)), GWASTools::getScanID(gdata))
+  scan_ids <- as.numeric(gsub('OBS_', '', df_obs$PCA_VARNAME))
   setup_temp_dir()
-  .untar_impute_bed(tar_paths, df_snp, l_peaks, scan_ids)
+  .untar_impute_bed(tar_paths, df_snp, l_peaks, match(scan_ids, GWASTools::getScanID(gdata)))
   l_haplo <- .estimate_haplotypes(l_peaks, n_cores, df_snp)
   l_haplo <- .add_SNPs(l_haplo, df_vars, gdata, scan_ids)
 
