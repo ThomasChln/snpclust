@@ -188,7 +188,7 @@ save_genotype_data_as_gds <- function(
   filename,
   save_annotations = TRUE,
   compress = "ZIP.max",
-  check = TRUE,
+  check = FALSE,
   quiet = FALSE,
   chunk_size = 1000,
   ...
