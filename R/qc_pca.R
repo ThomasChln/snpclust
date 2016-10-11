@@ -82,7 +82,7 @@ snprelate_pca <- function(gdata, n_axes = 32, n_cores = 2) {
 
   # add obs annotations from gdata
   obs_idxs <- df_pca$PCA_VARTYPE == 'OBS'
-  df_annot <- gdata@scanAnnot@data[l_ids[[1]],] 
+  df_annot <- subset(gdata@scanAnnot@data, scanID %in% l_ids[[1]]) 
   for (colname in names(gdata@scanAnnot@data)) {
     df_pca[[colname]] <- NA
     df_pca[obs_idxs, colname] <- as.character(df_annot[[colname]])
