@@ -6,7 +6,7 @@
 }
 
 snprelate_qc <- function(gdata, sample_nas = .03, snp_nas = .01, maf = .05,
-  tsnp = .8, ibs = .99, n_cores = 2) {
+  tsnp = .8, ibs = .99, monozygotic_twins_ids = NULL, n_cores = 2) {
 
   stopifnot(inherits(gdata, 'GenotypeData'))
   l_ids_original <- list(getScanID(gdata), getSnpID(gdata))
@@ -14,17 +14,27 @@ snprelate_qc <- function(gdata, sample_nas = .03, snp_nas = .01, maf = .05,
   df_qc <- .rbind_qc(NULL, 'Raw', NA, l_ids)
   gds <- request_snpgds_file(gdata)$snpgds
 
+  # samples NAs
   sample_nas_rates <- SNPRelate::snpgdsSampMissRate(gds, l_ids[[1]], l_ids[[2]])
   l_ids[[1]] <- l_ids[[1]][sample_nas_rates <= sample_nas]
   df_qc <- .rbind_qc(df_qc, 'Samples NAs', sample_nas, l_ids)
 
+  # samples IBS
   m_ibs <- SNPRelate::snpgdsIBS(gds, l_ids[[1]], l_ids[[2]], num.thread = n_cores,
     verbose = FALSE)$ibs
   m_ibs[lower.tri(m_ibs, TRUE)] <- NA
   max_ibs <- apply(m_ibs[, -1], 2, max, na.rm = TRUE)
   l_ids[[1]] <- l_ids[[1]][c(TRUE, max_ibs < ibs)]
-  df_qc <- .rbind_qc(df_qc, 'Identity by state', ibs, l_ids)
 
+  # monozygotic twins
+  if (!is.null(monozygotic_twins_ids) &&
+    any(monozygotic_twins_ids %in% l_ids_original[[1]])) {
+    l_ids[[1]] <- union(l_ids[[1]],
+      monozygotic_twins_ids[monozygotic_twins_ids %in% l_ids_original[[1]]])
+  }
+  df_qc <- .rbind_qc(df_qc, 'Identity by state - Twins', ibs, l_ids)
+
+  # MAF
   l_ids[[2]] <- unlist(SNPRelate::snpgdsSelectSNP(gds, l_ids[[1]], l_ids[[2]],
       missing.rate = snp_nas, verbose = FALSE))
   df_qc <- .rbind_qc(df_qc, 'SNPs NAs', snp_nas, l_ids)
@@ -32,6 +42,7 @@ snprelate_qc <- function(gdata, sample_nas = .03, snp_nas = .01, maf = .05,
       maf = maf, verbose = FALSE))
   df_qc <- .rbind_qc(df_qc, 'MAF', maf, l_ids)
 
+  # TagSNP
   if (!is.na(tsnp)) {
     l_ids[[2]] <- unlist(SNPRelate::snpgdsLDpruning(gds, l_ids[[1]], l_ids[[2]],
         ld.threshold = sqrt(tsnp), method = 'r', verbose = FALSE))
