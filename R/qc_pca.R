@@ -24,14 +24,15 @@ snprelate_qc <- function(gdata, sample_nas = .03, snp_nas = .01, maf = .05,
     verbose = FALSE)$ibs
   m_ibs[lower.tri(m_ibs, TRUE)] <- NA
   max_ibs <- apply(m_ibs[, -1], 2, max, na.rm = TRUE)
-  l_ids[[1]] <- l_ids[[1]][c(TRUE, max_ibs < ibs)]
+  scan_ids_ibs <- l_ids[[1]][c(TRUE, max_ibs < ibs)]
 
   # monozygotic twins
   if (!is.null(monozygotic_twins_ids) &&
-    any(monozygotic_twins_ids %in% l_ids_original[[1]])) {
-    l_ids[[1]] <- union(l_ids[[1]],
-      monozygotic_twins_ids[monozygotic_twins_ids %in% l_ids_original[[1]]])
+    any(monozygotic_twins_ids %in% l_ids[[1]])) {
+    scan_ids_ibs <- union(scan_ids_ibs,
+      monozygotic_twins_ids[monozygotic_twins_ids %in% l_ids[[1]]])
   }
+  l_ids[[1]] <- scan_ids_ibs
   df_qc <- .rbind_qc(df_qc, 'Identity by state - Twins', ibs, l_ids)
 
   # MAF
