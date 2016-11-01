@@ -1,10 +1,10 @@
 
 .haplo_features <- function(l_haplo, n_cores) {
-  l_feats <- parallel::mclapply(l_haplo, function(haplo) {
-      (if (is.null(dim(haplo))) identity else haplo_features)(haplo)
+  nulls <- sapply(l_haplo, function(haplo) is.null(dim(haplo)))
+  l_haplo[!nulls] <- parallel::mclapply(l_haplo[!nulls], function(haplo) {
+      haplo_features(haplo)
     }, mc.cores = n_cores)
-  attributes(l_feats) <- attributes(l_haplo)
-  l_feats
+  l_haplo
 }
 
 haplo_features <- function(m_data, order_idxs = FALSE) {
