@@ -71,9 +71,9 @@ compute_pca_prcomp <- function(data, center = TRUE, scale = TRUE) {
 
 pca_fortify <- function(qb_pca,
   active_obs = TRUE,
-  sup_obs = TRUE,
+  sup_obs = FALSE,
   active_vars = TRUE,
-  sup_vars = TRUE,
+  sup_vars = FALSE,
   include_pc_variance = TRUE
 ) {
 
