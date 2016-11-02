@@ -74,11 +74,11 @@ get_features_pca <- function(idx, snpclust_obj) {
   m_feats <- t(t(.qb_scale(m_feats)) * attr(m_feats, 'weights')[polymorphs])
 
   m_feats <- transitive_tagsnp(sample_impute(m_feats))
-  obs_ids <- match(getScanID(snpclust_obj$gdata[[idx]]),
-    gdata@scanAnnot@data$scanID)
+  gdata <- snpclust_obj$gdata[[idx]]
+  obs_ids <- match(getScanID(scanID), gdata@scanAnnot@data$scanID)
   df_feats <- cbind.data.frame(m_feats, id = paste(1:nrow(m_feats)),
     # add observation annotations
-    snpclust_obj$gdata[[idx]]@scanAnnot@data[obs_ids, ],
+    gdata@scanAnnot@data[obs_ids, ],
     stringsAsFactors = FALSE)
 
   pca_fortify(get_pca(df_feats, 'id', vars = colnames(m_feats)))
