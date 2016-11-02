@@ -1,17 +1,8 @@
-genotype_data_subset <- function(gdata, snps_idx = seq_len(nsnp(gdata)), 
-                                        scans_idx = seq_len(nscan(gdata))) {
-  stopifnot(is(gdata, 'GenotypeData'))
-  stopifnot(all(snps_idx >= 1 & snps_idx <= nsnp(gdata)),
-    all(scans_idx >= 1 & scans_idx <= nscan(gdata))) 
-
-  # subset of a subset
-  if (is(gdata, 'GenotypeDataSubset')) {
-    # resolve the indices once for all, and avoid to overwrite the fields
-    snps_idx <- gdata@snps_idx[snps_idx]
-    scans_idx <- gdata@scans_idx[scans_idx]
-  }
-  
-  new('GenotypeDataSubset', gdata, snps_idx = snps_idx,  scans_idx = scans_idx)
+genotype_data_subset <- function(gdata, snps_idxs, scans_idxs) {
+  qced_geno <- fetch_genotypes(gdata)[snps_idxs, scans_idxs]
+  qced_scans <- gdata@scanAnnot@data[scans_idxs, ]
+  qced_snps <- gdata@snpAnnot@data[snps_idxs, ]
+  qced_gdata <- build_gwastools(qced_geno, qced_scans, qced_snps)
 }
 
 

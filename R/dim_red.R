@@ -1,7 +1,7 @@
 
 .haplo_features <- function(l_haplo, n_cores) {
-  nulls <- sapply(l_haplo, function(haplo) is.null(dim(haplo)))
-  l_haplo[!nulls] <- parallel::mclapply(l_haplo[!nulls], function(haplo) {
+  snps <- sapply(l_haplo, function(haplo) is.null(dim(haplo)))
+  l_haplo[!snps] <- parallel::mclapply(l_haplo[!snps], function(haplo) {
       haplo_features(haplo)
     }, mc.cores = n_cores)
   l_haplo
@@ -29,16 +29,17 @@ haplo_features <- function(m_data, order_idxs = FALSE) {
   indiv_haplos[obs_match]
 }
 
-.merge_haplotypes <- function(m_snps, max_n_snps = 1e2, n_mixtures = 2) {
-  # estimate 2 gaussian mixtures, subset SNPs for performance
+.merge_haplotypes <- function(m_snps, max_n_snps = 2e2, n_mixtures = 2) {
+  # estimate 2 gaussian mixtures, use hclust if too large for performance
   if (ncol(m_snps) > max_n_snps) {
-    m_snps <- m_snps[, seq(1, ncol(m_snps), length = max_n_snps)]
+    return(.hclust_classif(hclust(dist(m_snps))))
   }
   clust <- catch_warnings(mclust::Mclust(m_snps, n_mixtures))
+
   # delete 2 useless warnings
   msgs <- 'best model occurs at the|optimal number of clusters occurs at'
   clust[[2]] <- clust[[2]][!grepl(msgs, clust[[2]])]
-  if (length(clust[[2]])) {
+  if (length(clust[[2]]) != 0) {
     # bug where mclust gives only one group, use hclust 
     if (length(clust[[2]]) == 1 && grepl('no assignment to', clust[[2]][[1]])) {
       .hclust_classif(hclust(dist(m_snps)))
