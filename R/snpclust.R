@@ -75,7 +75,7 @@ get_features_pca <- function(idx, snpclust_obj) {
 
   m_feats <- transitive_tagsnp(sample_impute(m_feats))
   gdata <- snpclust_obj$gdata[[idx]]
-  obs_ids <- match(getScanID(scanID), gdata@scanAnnot@data$scanID)
+  obs_ids <- match(getScanID(gdata), gdata@scanAnnot@data$scanID)
   df_feats <- cbind.data.frame(m_feats, id = paste(1:nrow(m_feats)),
     # add observation annotations
     gdata@scanAnnot@data[obs_ids, ],
