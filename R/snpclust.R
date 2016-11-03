@@ -51,7 +51,7 @@ snpclust <- function(tar_paths, gds, subsets = '', n_axes = 1e2,
   snpclust_obj$features <- lapply(haplos, .haplo_features, n_cores)
   snpclust_obj$features <- lapply(seq_along(subsets), .haplo_weights,
     snpclust_obj)
-  snpclust_obj$features_qc <- lapply(seq_along(subsets), .features_qc,
+  snpclust_obj$features_qc <- lapply(seq_along(subsets), features_qc,
     snpclust_obj)
   snpclust_obj$features_pca <- lapply(seq_along(subsets), get_features_pca,
     snpclust_obj)
