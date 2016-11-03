@@ -93,7 +93,7 @@ haplo_mcmc <- function(path, probe_ids, n_cores = 1) {
   .system2('plink', paste('--bfile', path, '--snps',
       paste(probe_ids, collapse = ','), '--make-bed --out'))
   # Call shapeit
-  .system2('shapeit', paste('-B output_plink -T', n_cores, '-O'))
+  .system2('shapeit', paste('-B output_plink --seed 1 -T', n_cores, '-O'))
   # Read output
   df_haplo <- as.data.frame(data.table::fread('output_shapeit.haps'))
   rownames(df_haplo) <- probe_ids

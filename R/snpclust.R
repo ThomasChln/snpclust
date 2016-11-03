@@ -51,6 +51,8 @@ snpclust <- function(tar_paths, gds, subsets = '', n_axes = 1e2,
   snpclust_obj$features <- lapply(haplos, .haplo_features, n_cores)
   snpclust_obj$features <- lapply(seq_along(subsets), .haplo_weights,
     snpclust_obj)
+  snpclust_obj$features_qc <- lapply(seq_along(subsets), .features_qc,
+    snpclust_obj)
   snpclust_obj$features_pca <- lapply(seq_along(subsets), get_features_pca,
     snpclust_obj)
 
@@ -67,11 +69,17 @@ snpclust <- function(tar_paths, gds, subsets = '', n_axes = 1e2,
   list(pca = pca, qc = qced_gdata$df_qc, gdata = qced_gdata$gdata)
 } 
 
-get_features_pca <- function(idx, snpclust_obj) {
+features_qc <- function(idx, snpclust_obj, weighted = FALSE) {
   m_feats <- snpclust_obj$features[[idx]]
   
   polymorphs <- get_polymorphic_cols(m_feats)
-  m_feats <- t(t(.qb_scale(m_feats)) * attr(m_feats, 'weights')[polymorphs])
+
+  m_feats <- .qb_scale(m_feats)
+  if (weighted) {
+    t(t(m_feats) * attr(m_feats, 'weights')
+  }
+
+  m_feats <- m_feats[polymorphs]
 
   m_feats <- transitive_tagsnp(sample_impute(m_feats))
   gdata <- snpclust_obj$gdata[[idx]]
@@ -80,7 +88,10 @@ get_features_pca <- function(idx, snpclust_obj) {
     # add observation annotations
     gdata@scanAnnot@data[obs_ids, ],
     stringsAsFactors = FALSE)
+}
 
+get_features_pca <- function(idx, snpclust_obj) {
+  df_feats <- snpclust_obj$features_qc[[idx]]
   pca_fortify(get_pca(df_feats, 'id', vars = colnames(m_feats)))
 }
 
