@@ -75,23 +75,24 @@ features_qc <- function(idx, snpclust_obj, weighted = FALSE) {
   polymorphs <- get_polymorphic_cols(m_feats)
 
   m_feats <- .qb_scale(m_feats)
-  if (weighted) {
-    m_feats <- t(t(m_feats) * attr(m_feats, 'weights'))
+  m_feats <- if (weighted) {
+    t(t(m_feats) * attr(m_feats, 'weights'))
+  } else {
+    as.matrix(m_feats)
   }
 
-  m_feats <- m_feats[polymorphs]
+  m_feats <- m_feats[, polymorphs]
 
   m_feats <- transitive_tagsnp(sample_impute(m_feats))
+}
+
+get_features_pca <- function(idx, snpclust_obj) {
+  m_feats <- snpclust_obj$features_qc[[idx]]
   gdata <- snpclust_obj$gdata[[idx]]
   obs_ids <- match(getScanID(gdata), gdata@scanAnnot@data$scanID)
   df_feats <- cbind.data.frame(m_feats, id = paste(1:nrow(m_feats)),
     # add observation annotations
-    gdata@scanAnnot@data[obs_ids, ],
-    stringsAsFactors = FALSE)
-}
-
-get_features_pca <- function(idx, snpclust_obj) {
-  df_feats <- snpclust_obj$features_qc[[idx]]
+    gdata@scanAnnot@data[obs_ids, ], stringsAsFactors = FALSE)
   pca_fortify(get_pca(df_feats, 'id', vars = colnames(m_feats)))
 }
 
