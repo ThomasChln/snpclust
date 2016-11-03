@@ -76,7 +76,7 @@ features_qc <- function(idx, snpclust_obj, weighted = FALSE) {
 
   m_feats <- .qb_scale(m_feats)
   if (weighted) {
-    t(t(m_feats) * attr(m_feats, 'weights')
+    m_feats <- t(t(m_feats) * attr(m_feats, 'weights'))
   }
 
   m_feats <- m_feats[polymorphs]
