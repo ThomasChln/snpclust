@@ -72,16 +72,12 @@ snpclust <- function(tar_paths, gds, subsets = '', n_axes = 1e2,
 features_qc <- function(idx, snpclust_obj, weighted = FALSE) {
   m_feats <- snpclust_obj$features[[idx]]
   
-  polymorphs <- get_polymorphic_cols(m_feats)
-
   m_feats <- .qb_scale(m_feats)
   m_feats <- if (weighted) {
     t(t(m_feats) * attr(m_feats, 'weights'))
   } else {
     as.matrix(m_feats)
   }
-
-  m_feats <- m_feats[, polymorphs]
 
   m_feats <- transitive_tagsnp(sample_impute(m_feats))
 }
