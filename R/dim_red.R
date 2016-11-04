@@ -1,9 +1,9 @@
 
 .haplo_features <- function(l_haplo, n_cores) {
   snps <- sapply(l_haplo, function(haplo) is.null(dim(haplo)))
-  l_haplo[!snps] <- parallel::mclapply(l_haplo[!snps], function(haplo) {
+  l_haplo[!snps] <- lapply(l_haplo[!snps], function(haplo) {
       haplo_features(haplo)
-    }, mc.cores = n_cores)
+    })
   l_haplo
 }
 
