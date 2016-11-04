@@ -2,7 +2,9 @@
 ################################################################################
 #' snpclust
 #'
-#' Snpclust performs unsupervised feature selection and summarization based on Principal Component Analysis, Gaussian Mixture Models, and Markov Chain Monte Carlo.
+#' Snpclust performs unsupervised feature selection and summarization based on
+#' Principal Component Analysis, Gaussian Mixture Models, and Markov Chain
+#' Monte Carlo.
 #'
 #' @param tar_paths   Path(s) of tar.gz files containing PLINK binary files.
 #'                    If missing, files are generated with the gds file.
@@ -72,7 +74,10 @@ snpclust <- function(tar_paths, gds, subsets = '', n_axes = 1e2,
 features_qc <- function(idx, snpclust_obj, weighted = FALSE) {
   m_feats <- snpclust_obj$features[[idx]]
   
-  m_feats <- .qb_scale(m_feats)
+  m_feats <- as.matrix(m_feats)
+  polymorphs <- get_polymorphic_cols(m_feats)
+  m_feats <- m_feats[, polymorphs]
+
   m_feats <- if (weighted) {
     t(t(m_feats) * attr(m_feats, 'weights'))
   } else {
@@ -103,7 +108,8 @@ transitive_tagsnp <- function(m_data, r2 = .8) {
   l_data <- lapply(l_data, .transitive_tagsnp, r2)
   cnames <- unlist(lapply(l_data, colnames))
 
-  matrix(unlist(l_data), ncol = length(cnames), dimnames = list(rownames(m_data), cnames))
+  matrix(unlist(l_data), ncol = length(cnames),
+    dimnames = list(rownames(m_data), cnames))
 }
 
 .tagsnp <- function(loc, df_ld, r2) {
@@ -141,7 +147,8 @@ transitive_tagsnp <- function(m_data, r2 = .8) {
   df_obs <- subset(df_pca, PCA_VARTYPE == 'OBS')
   scan_ids <- as.numeric(gsub('OBS_', '', df_obs$PCA_VARNAME))
   setup_temp_dir()
-  .untar_impute_bed(tar_paths, df_snp, l_peaks, match(scan_ids, GWASTools::getScanID(gdata)))
+  .untar_impute_bed(tar_paths, df_snp, l_peaks,
+     match(scan_ids, GWASTools::getScanID(gdata)))
   l_haplo <- .estimate_haplotypes(l_peaks, n_cores, df_snp)
   l_haplo <- .add_SNPs(l_haplo, df_vars, gdata, scan_ids)
 
@@ -187,14 +194,6 @@ transitive_tagsnp <- function(m_data, r2 = .8) {
   names(l_haplo)[snps_idxs] <- paste0(names(l_haplo)[snps_idxs], '.', snps_ids)
 
   l_haplo
-}
-
-.qb_scale <- function(data) {
-  data <- as.matrix(data)
-  polymorphs <- get_polymorphic_cols(data)
-  data <- data[, polymorphs]
-
-  scale(data)
 }
 
 get_polymorphic_cols <- function(data) {
