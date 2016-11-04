@@ -59,17 +59,11 @@ haplo_features <- function(m_data, order_idxs = FALSE) {
 ###############################################################################
 .estimate_haplotypes <- function(l_peaks, n_cores, df_snp) {
 
-  size_peaks_order <- order(sapply(l_peaks, length), decreasing = TRUE)
   l_peaks <- lapply(l_peaks,
     function(peaks) list(df_snp$probe_id[peaks], peaks))
-  l_peaks <- l_peaks[size_peaks_order]
 
-  l_haplo <- list()
   l_haplo <- parallel::mclapply(l_peaks, .get_haplos,
     1, 'bedfile', mc.cores = n_cores, mc.set.seed = FALSE)
-  names(l_haplo) <- names(l_peaks)
-
-  l_haplo[size_peaks_order]
 }
 
 .get_haplos <- function(peaks, n_cores, path) {
