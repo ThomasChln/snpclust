@@ -5,10 +5,9 @@ fetch_hgdp <- function(paths) {
   for (i in 1:2) if (!file.exists(paths[i])) download.file(urls[i], paths[i])
 }
 
-fetch_reduced_hgdp <- function(paths, zippaths, nsnp = 2e3, nscan = -1, only_eu = TRUE) {
-  fetch_hgdp(paths)
-  if (nsnp == -1 && nscan == -1) return()
-  paths <- file.path(getwd(), paths)
+reduce_hgdp <- function(paths,
+  zippaths = paste0('hgdp/', c('HGDP_FinalReport_Forward.txt', 'HGDP_Map.txt')),
+  nsnp = -1, nscan = -1, region_selection = 'Europe') {
 
   setup_temp_dir()
   txts_paths <- unzip(paths[1], zippaths, junkpaths = TRUE)
@@ -17,13 +16,15 @@ fetch_reduced_hgdp <- function(paths, zippaths, nsnp = 2e3, nscan = -1, only_eu 
 # fread is bugged (since 1.9: it can not parse header with (first) empty var)
   cols <- strsplit(readLines(txts_paths[1], 1), '\t')[[1]]
   cols[1] <- 'V1'
-  geno <- as.data.frame(data.table::fread(txts_paths[1], nrows = nsnp))
+  geno <- data.table::fread(txts_paths[1], nrows = nsnp, data.table = FALSE)
   names(geno) <- cols
 
   l_files <- list(geno)
-  l_files[2:3] <- lapply(file_paths, function (i) as.data.frame(data.table::fread(i)))
+  l_files[2:3] <- lapply(file_paths, function (i) data.table::fread(i, data.table = FALSE))
 
-  if (only_eu) l_files[[2]] <- l_files[[2]][l_files[[2]]$Region == 'Europe', ]
+  if (!is.null(region_selection)) {
+    l_files[[2]] <- l_files[[2]][grep(region_selection, l_files[[2]]$Region), ]
+  }
 
   if (nscan != -1) l_files[[2]] <- l_files[[2]][seq_len(nscan), ]
   idxs <- match(l_files[[2]][[1]], colnames(l_files[[1]]))
@@ -120,8 +121,7 @@ actg_tsv_to_gdata <- function(geno_path, scans_path,
   geno <- if (large_memory) {
 # fread is bugged (since 1.9: it can not parse header with (first) empty var)
       cols[1] <- 'V1'
-      geno <- data.table::fread(geno_path)
-      geno <- as.data.frame(geno)
+      geno <- data.table::fread(geno_path, data.table = FALSE)
       names(geno) <- cols
       rownames(geno) <- geno[[1]]
       geno[-1]

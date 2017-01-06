@@ -31,7 +31,7 @@
 #' @author tcharlon
 #' @export
 snpclust <- function(tar_paths, gds, subsets = '', n_axes = 1e2,
-  n_cores = 2, ...) {
+  n_cores = 2, only_pca = FALSE, ...) {
 
   if (missing(tar_paths)) {
     tar_paths <- gds_to_bedtargz(normalizePath(gds))
@@ -45,18 +45,20 @@ snpclust <- function(tar_paths, gds, subsets = '', n_axes = 1e2,
   snpclust_obj <- list(pca = lapply(pca_objs, '[[', 'pca'),
     qc = lapply(pca_objs, '[[', 'qc'), gdata = lapply(pca_objs, '[[', 'gdata'))
 
-  # haplotypes estimation, merging, and weighting by PC rank and contributions 
-  haplos <- lapply(snpclust_obj$pca, .snpclust_features, gdata, tar_paths, 0,
-    n_cores)
-  snpclust_obj$peaks <- lapply(haplos, attr, 'peaks')
-  snpclust_obj$max_contributor <- lapply(haplos, attr, 'max_contributor')
-  snpclust_obj$features <- lapply(haplos, .haplo_features, n_cores)
-  snpclust_obj$features <- lapply(seq_along(subsets), .haplo_weights,
-    snpclust_obj)
-  snpclust_obj$features_qc <- lapply(seq_along(subsets), features_qc,
-    snpclust_obj)
-  snpclust_obj$features_pca <- lapply(seq_along(subsets), get_features_pca,
-    snpclust_obj)
+  if (!only_pca) {
+    # haplotypes estimation, merging, and weighting by PC rank and contributions 
+    haplos <- lapply(snpclust_obj$pca, .snpclust_features, gdata, tar_paths, 0,
+      n_cores)
+    snpclust_obj$peaks <- lapply(haplos, attr, 'peaks')
+    snpclust_obj$max_contributor <- lapply(haplos, attr, 'max_contributor')
+    snpclust_obj$features <- lapply(haplos, .haplo_features, n_cores)
+    snpclust_obj$features <- lapply(seq_along(subsets), .haplo_weights,
+      snpclust_obj)
+    snpclust_obj$features_qc <- lapply(seq_along(subsets), features_qc,
+      snpclust_obj)
+    snpclust_obj$features_pca <- lapply(seq_along(subsets), get_features_pca,
+      snpclust_obj)
+  }
 
   # unlist slots if only one subsets 
   if (length(subsets) == 1) snpclust_obj <- lapply(snpclust_obj, '[[', 1)

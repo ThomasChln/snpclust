@@ -206,9 +206,7 @@ ggplot_pca    <- function(pca,
   # Generate plot base
   plt <- ggplot(mapping = mapping) +
     xlab(axis_labs[1]) +
-    ylab(axis_labs[2]) +
-    geom_hline(aes(yintercept = 0), linetype = "dashed") +
-    geom_vline(aes(xintercept = 0), linetype = "dashed")
+    ylab(axis_labs[2])
 
   # Display observations
   # check availability of all obs
@@ -256,8 +254,9 @@ all_obs <- c(
     if (!is.null(groups) && !is.numeric(df_all_obs[, groups])) {
       df_all_obs <- df_all_obs[!is.na(df_all_obs[[groups]]), ]
       if (ellipses) {
-        plt <- plt + stat_ellipse(aes_string(fill = groups, color = groups),
-          data = df_all_obs, ci = ellipses_ci)
+        plt <- plt + do.call(ggplot2::stat_ellipse,
+            list(mapping = aes_string(fill = groups, color = groups),
+              data = df_all_obs))
       }
       if (link) {
         plt <- plt + geom_line(data = df_all_obs,
@@ -429,9 +428,9 @@ create_pca_axis_labels <- function(pca, pc_variance = TRUE, axes,
   #fix note during checks
   PCA_VARNAME <- NULL
 
-  exp_var   <- dplyr::filter(pca, PCA_VARNAME == 'Explained_variance_percent')
+  exp_var   <- dplyr::filter(pca, PCA_VARNAME == 'Explained_variance')
   axis_labs <- if (pc_variance && nrow(exp_var)) {
-      paste0(names_axe, ' (', exp_var[axes], '% explained var.)')
+      paste0(names_axe, ' (', round(exp_var[axes] * 100, 1), '% explained variance)')
     } else {
       names_axe
     }
