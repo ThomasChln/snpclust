@@ -29,7 +29,7 @@ haplo_features <- function(m_data, order_idxs = FALSE) {
   indiv_haplos[obs_match]
 }
 
-.merge_haplotypes <- function(m_snps, max_n_snps = 150, n_mixtures = 2) {
+.merge_haplotypes <- function(m_snps, max_n_snps = 100, n_mixtures = 2) {
   # estimate 2 gaussian mixtures, use hclust if too large for performance
   if (ncol(m_snps) > max_n_snps) {
     return(.hclust_classif(hclust(dist(m_snps))))
