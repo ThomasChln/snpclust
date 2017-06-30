@@ -4,11 +4,10 @@
 \alias{plot_pca_pairs}
 \title{Plot PCA pairs}
 \usage{
-plot_pca_pairs(axes, ..., max_vars = 0L, ellipses = TRUE)
+plot_pca_pairs(seq_axes, ..., max_vars = 0L, ellipses = TRUE)
 }
 \arguments{
-\item{axes}{Two principal component axes to plot.
-Default: 1:2}
+\item{seq_axes}{Sequence of axes to display}
 
 \item{...}{Passed to get_pca_panels}
 

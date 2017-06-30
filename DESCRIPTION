@@ -24,7 +24,6 @@ Suggests:
     knitr,
     methods,
     plyr,
-    proto,
     reshape2,
     SNPRelate
 VignetteBuilder: knitr

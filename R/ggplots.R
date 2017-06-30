@@ -305,17 +305,17 @@ all_vars <- c(
 #' Get the pair combinations panels of Principal Components.
 #'
 #' @inheritParams ggplot_pca
-#' @param axes     Sequence of axes to display
+#' @param seq_axes     Sequence of axes to display
 #' @param max_vars Number of variables to display
 #' @param ... Passed to ggplot_pca
 #' @return NULL
 #' @export
-get_pca_panels <- function(pca, axes = 1:4, groups = NULL, max_vars = 0L,
+get_pca_panels <- function(pca, seq_axes = 1:4, groups = NULL, max_vars = 0L,
   ...) {
 
-  check_fx_args(axes = '!I+', max_vars = '!I1')
+  check_fx_args(seq_axes = '!I+', max_vars = '!I1')
 
-  stopifnot(length(axes) > 2)
+  stopifnot(length(seq_axes) > 2)
 
   # dispatch on qb_pca and pca
   if (inherits(pca, 'qb_pca')) {
@@ -325,22 +325,11 @@ get_pca_panels <- function(pca, axes = 1:4, groups = NULL, max_vars = 0L,
   }
 
   # Get PC plots
-  df_axes <- utils::combn(axes, 2)
+  df_axes <- utils::combn(seq_axes, 2)
   vars_idxs <- which(pca$PCA_VARTYPE == 'VAR')
   seq_vars <- seq_len(min(max_vars, length(vars_idxs)))
-  plots <- apply(df_axes, 2, function(axes) {
-      axes <- as.vector(axes)
-      pcs <- paste0('PC', axes)
-      df_vars <- abs(pca[vars_idxs, pcs])
-      ord_vars_idxs <- apply(df_vars, 2, order, decreasing = TRUE)[seq_vars, ]
-      signif_vars_idxs <- vars_idxs[ord_vars_idxs]
-      vars_idxs <- setdiff(vars_idxs, signif_vars_idxs)
-      if (length(vars_idxs)) pca <- pca[-vars_idxs, ]
-      ggplot_pca(pca, groups, axes, white_panel = FALSE,
-          vars = TRUE, scale_sdev = TRUE, ...) +
-        labs(x = pcs[1], y = pcs[2]) +
-        theme(axis.ticks = element_blank(), axis.text = element_blank())
-    })
+  plots <- apply(df_axes, 2, .get_pca_panels, pca, vars_idxs, seq_vars, groups,
+    ...)
 
   # Set title and legend
   n_obs <- sum(pca$PCA_VARTYPE == 'OBS')
@@ -358,7 +347,7 @@ get_pca_panels <- function(pca, axes = 1:4, groups = NULL, max_vars = 0L,
     theme(plot.title = element_blank(), legend.position = 'none'))
 
   # Put in upper right triangle
-  axes_len <- length(axes) - 1
+  axes_len <- length(seq_axes) - 1
   position_matrix <- matrix(1:(axes_len ^ 2), axes_len)
   triangle_panel <- t(upper.tri(position_matrix, TRUE))
   up_triangle <- which(triangle_panel)
@@ -368,6 +357,21 @@ get_pca_panels <- function(pca, axes = 1:4, groups = NULL, max_vars = 0L,
 
   plots[t(position_matrix)]
 }
+
+.get_pca_panels <- function(axes, pca, vars_idxs, seq_vars, groups, ...) {
+  axes <- as.vector(axes)
+  pcs <- paste0('PC', axes)
+  df_vars <- abs(pca[vars_idxs, pcs])
+  ord_vars_idxs <- apply(df_vars, 2, order, decreasing = TRUE)[seq_vars, ]
+  signif_vars_idxs <- vars_idxs[ord_vars_idxs]
+  vars_idxs <- setdiff(vars_idxs, signif_vars_idxs)
+  if (length(vars_idxs)) pca <- pca[-vars_idxs, ]
+  ggplot_pca(pca, groups, axes, white_panel = FALSE,
+      vars = TRUE, scale_sdev = TRUE, ...) +
+    labs(x = pcs[1], y = pcs[2]) +
+    theme(axis.ticks = element_blank(), axis.text = element_blank())
+}
+
 
 grob_pca_panels <- function(plots, only_panels = TRUE, legend = FALSE) {
   stopifnot(inherits(plots, 'list'))
@@ -415,8 +419,8 @@ grob_pca_panels <- function(plots, only_panels = TRUE, legend = FALSE) {
 #' @param ... Passed to get_pca_panels
 #' @return NULL
 #' @export
-plot_pca_pairs <- function(axes, ..., max_vars = 0L, ellipses = TRUE) {
-  ggplts <- get_pca_panels(axes = axes, ..., max_vars = max_vars,
+plot_pca_pairs <- function(seq_axes, ..., max_vars = 0L, ellipses = TRUE) {
+  ggplts <- get_pca_panels(seq_axes = seq_axes, ..., max_vars = max_vars,
     ellipses = ellipses)
   graphics::plot(grob_pca_panels(ggplts))
 }
@@ -446,50 +450,6 @@ create_pca_axis_labels <- function(pca, pc_variance = TRUE, axes,
 
   axis_labs
 }
-
-stat_ellipse <- function(mapping = NULL, data = NULL, geom = "polygon",
-  position = "identity", alpha = 0.1, ...) {
-  proto <- NULL; Library <- library; Library(proto)
-
-  ### Stat is not exported. Let's trick R CMD check
-  Stat <- get('Stat', envir = getNamespace('ggplot2'))
-  GeomPolygon <- get('GeomPolygon', envir = getNamespace('ggplot2'))
-  .super <- NULL # dummy
-
-  StatEllipse <- proto::proto(Stat, {
-      required_aes <- c("x", "y")
-      default_geom <- function(.) GeomPolygon
-      objname <- "ellipse"
-
-      calculate_groups <- function(., data, scales, ...){
-        .super$calculate_groups(., data, scales,  ...)
-      }
-
-      calculate <- function(., data, scales, ci = 0.95, segments = 51, ...) {
-        dfn <- 2
-        dfd <- length(data$x) - 1
-        ellipse <- if (dfd < 3) {
-            rbind(c(NA,NA))
-          } else {
-            v <- stats::cov.wt(cbind(data$x, data$y))
-            shape <- v$cov
-            center <- v$center
-            radius <- sqrt(dfn * stats::qf(ci, dfn, dfd))
-            angles <- (0:segments) * 2 * pi / segments
-            unit.circle <- cbind(cos(angles), sin(angles))
-            t(center + radius * t(unit.circle %*% chol(shape)))
-          }
-
-        ellipse <- as.data.frame(ellipse)
-        colnames(ellipse) <- c("x","y")
-        ellipse
-      }
-    })
-
-  StatEllipse$new(mapping = mapping, data = data, geom = geom, position = position,
-    alpha = alpha,  ...)
-}
-
 
 draw_pca_vars <- function(data_vars, names_axe, scale = 1, circle = FALSE,
   scale_sdev = FALSE) {

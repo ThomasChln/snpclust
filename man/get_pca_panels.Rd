@@ -4,13 +4,12 @@
 \alias{get_pca_panels}
 \title{Get PCA pairs panels}
 \usage{
-get_pca_panels(pca, axes = 1:4, groups = NULL, max_vars = 0L, ...)
+get_pca_panels(pca, seq_axes = 1:4, groups = NULL, max_vars = 0L, ...)
 }
 \arguments{
 \item{pca}{pca or qb_pca object (which is fortified)}
 
-\item{axes}{Two principal component axes to plot.
-Default: 1:2}
+\item{seq_axes}{Sequence of axes to display}
 
 \item{groups}{Column index or name of qb_pca$data for the grouping of
 observations.
