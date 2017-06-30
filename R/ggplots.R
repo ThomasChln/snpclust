@@ -400,7 +400,7 @@ grob_pca_panels <- function(plots, only_panels = TRUE, legend = FALSE) {
 #'
 #' Plots the pair combinations of Principal Components.
 #'
-#' @inheritParams get_pca_panels
+#' @inheritParams snpclust:::get_pca_panels
 #' @inheritParams ggplot_pca
 #' @param max_vars Number of variables to display
 #' @param ... Passed to get_pca_panels
