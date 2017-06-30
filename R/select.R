@@ -50,7 +50,7 @@ peak_selection <- function(df_vars, chromosomes, n_cores = 2) {
       max(var_per_chr)
     })
 
-  which(var > quantile(chromosome_maxs, quant))
+  which(var > stats::quantile(chromosome_maxs, quant))
 }
 
 .max_peak <- function(peaks, chroms, length_peak) {

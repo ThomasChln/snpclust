@@ -2,7 +2,9 @@
 fetch_hgdp <- function(paths) {
   urls <- c('http://www.hagsc.org/hgdp/data/hgdp.zip', 
     'ftp://ftp.cephb.fr/hgdp_v3/hgdp-ceph-unrelated.out')
-  for (i in 1:2) if (!file.exists(paths[i])) download.file(urls[i], paths[i])
+  for (i in 1:2) {
+    if (!file.exists(paths[i])) utils::download.file(urls[i], paths[i])
+  }
 }
 
 reduce_hgdp <- function(paths,
@@ -10,7 +12,7 @@ reduce_hgdp <- function(paths,
   nsnp = -1, nscan = -1, region_selection = 'Europe') {
 
   setup_temp_dir()
-  txts_paths <- unzip(paths[1], zippaths, junkpaths = TRUE)
+  txts_paths <- utils::unzip(paths[1], zippaths, junkpaths = TRUE)
   file_paths <- c(paths[2], txts_paths[2])
 
 # fread is bugged (since 1.9: it can not parse header with (first) empty var)
@@ -29,18 +31,18 @@ reduce_hgdp <- function(paths,
   if (nscan != -1) l_files[[2]] <- l_files[[2]][seq_len(nscan), ]
   idxs <- match(l_files[[2]][[1]], colnames(l_files[[1]]))
   l_files[[2]] <- l_files[[2]][!is.na(idxs), ]
-  write.table(l_files[[2]], paths[2], row.names = FALSE,
+  utils::write.table(l_files[[2]], paths[2], row.names = FALSE,
     sep = '\t', quote = FALSE)
   l_files[[3]] <- l_files[[3]][match(l_files[[1]][[1]], l_files[[3]][[1]]), ]
-  write.table(l_files[[3]], txts_paths[2], row.names = FALSE, col.names = FALSE,
+  utils::write.table(l_files[[3]], txts_paths[2], row.names = FALSE, col.names = FALSE,
     sep = '\t', quote = FALSE)
-  l_files[[1]] <- l_files[[1]][c(1, na.omit(idxs))]
-  write.table(l_files[[1]], txts_paths[1], row.names = FALSE,
+  l_files[[1]] <- l_files[[1]][c(1, stats::na.omit(idxs))]
+  utils::write.table(l_files[[1]], txts_paths[1], row.names = FALSE,
     sep = '\t', quote = FALSE)
 
   dir.create('hgdp')
   for (i in 1:2) file.rename(txts_paths[i], zippaths[i]) 
-  zip(paths[1], zippaths)
+  utils::zip(paths[1], zippaths)
 }
 
 #' save_hgdp_as_gds
@@ -54,7 +56,7 @@ save_hgdp_as_gds <- function(
   zippaths = paste0('hgdp/', c('HGDP_FinalReport_Forward.txt', 'HGDP_Map.txt'))
   ) {
   setup_temp_dir()
-  txts_paths <- unzip(paths[1], zippaths, junkpaths = TRUE)
+  txts_paths <- utils::unzip(paths[1], zippaths, junkpaths = TRUE)
   actg_gdata <- actg_tsv_to_gdata(txts_paths[1], paths[2],
     c('scan_id', 'gender', 'population', 'geographic_origin', 'region'),
     txts_paths[2])
@@ -73,9 +75,9 @@ gds_to_bedtargz <- function(gds, tarpath = gsub('gds$', 'tar.gz', gds)) {
   gdata <- load_gds_as_genotype_data(gds)
   on.exit(close(gdata))
   bim <- paste0(tarname, '.bim')
-  df_snps <- read.table(bim, sep = '\t')
+  df_snps <- utils::read.table(bim, sep = '\t')
   df_snps[[2]] <- gdata@snpAnnot@data$probe_id 
-  write.table(df_snps, bim, sep = '\t',
+  utils::write.table(df_snps, bim, sep = '\t',
     row.names = FALSE, col.names = FALSE, quote = FALSE)
 
   plink_files <- paste0(tarname, '.', c('bed', 'bim', 'fam'))
@@ -88,7 +90,7 @@ gds_to_bedtargz <- function(gds, tarpath = gsub('gds$', 'tar.gz', gds)) {
 .gds_to_bedtargz <- function(gds, tarname) {
   gdsobj <- SNPRelate::snpgdsOpen(gds, FALSE)
   on.exit(closefn.gds(gdsobj))
-  if (any(grepl('snp[.]allele', capture.output(print(gdsobj))))) {
+  if (any(grepl('snp[.]allele', utils::capture.output(print(gdsobj))))) {
     delete.gdsn(index.gdsn(gdsobj, 'snp.allele'))
   }
   SNPRelate::snpgdsGDS2BED(gdsobj, tarname, verbose = FALSE)
@@ -137,7 +139,7 @@ actg_tsv_to_gdata <- function(geno_path, scans_path,
   scan_order_idxs <- match(scans$scan_id, colnames(geno))
   scans <- scans[!is.na(scan_order_idxs), ]
   scans <- cbind(scanID = seq_along(scans[[1]]), scans)
-  geno <- geno[, na.omit(scan_order_idxs)]
+  geno <- geno[, stats::na.omit(scan_order_idxs)]
 
 # convert genotype and write
   geno <- t(apply(geno, 1, actg_to_numeric, na_encoding))
@@ -165,7 +167,7 @@ actg_to_numeric <- function(snp, na_encoding = NA) {
 txt_scans_to_df <- function(path, col_map) {
   data <- as.data.frame(data.table::fread(path, '\t'))
   data <- data[!is.na(col_map)]
-  names(data) <- na.omit(col_map)
+  names(data) <- stats::na.omit(col_map)
   id_idx <- match('scan_id', names(data))
   data[-id_idx] <- lapply(data[-id_idx], factor)
 
@@ -177,7 +179,7 @@ txt_scans_to_df <- function(path, col_map) {
 txt_snps_to_df <- function(path, col_map) {
   data <- as.data.frame(data.table::fread(path, '\t'))
   data <- data[!is.na(col_map)]
-  names(data) <- na.omit(col_map)
+  names(data) <- stats::na.omit(col_map)
   data$chromosome <- as.integer(factor(data$chromosome,
       c(1:22, 'X', 'XY', 'Y', 'M'), nmax = 26, exclude = NULL))
   data$position <- as.integer(data$position)
@@ -214,7 +216,7 @@ bed_targz_to_gds <- function(tarpath, gdspath) {
 
 ###############################################################################
 .untar_bed <- function(tarpath, tmp_dir) {
-  paths <- untar(tarpath, list = TRUE)
+  paths <- utils::untar(tarpath, list = TRUE)
   patterns <- paste0('[.]', c('bed', 'bim', 'fam'), '$')
   idxs <- sapply(patterns, grep, paths)
   # if the idxs are in a list, at least one pattern is not found
@@ -223,7 +225,7 @@ bed_targz_to_gds <- function(tarpath, gdspath) {
       paste('Pattern not found in tar file:', paste(missing, collapse = ', '))
     })
   paths <- paths[idxs]
-  untar(tarpath, paths, exdir = tmp_dir, compressed = TRUE)
+  utils::untar(tarpath, paths, exdir = tmp_dir, compressed = TRUE)
 
   file.path(tmp_dir, paths)
 }
@@ -257,19 +259,19 @@ plink_merge <- function(tar_paths, dir, outpath = 'merge') {
 
   # get common SNPs
   snp_files <- sapply(l_paths, function(paths) grep('[.]bim$', paths))
-  snps <- read.table(l_paths[[1]][snp_files[1]])[[2]]
+  snps <- utils::read.table(l_paths[[1]][snp_files[1]])[[2]]
   for (index in seq_along(l_paths)[-1]) {
-    snps_match <- read.table(l_paths[[index]][snp_files[index]])[[2]]
+    snps_match <- utils::read.table(l_paths[[index]][snp_files[index]])[[2]]
     snps <- intersect(snps, snps_match)
   }
   write(as.character(snps), 'common_snps')
 
   # add dataset id to observation names
   lapply(l_paths, function(paths) {
-      scan_meta <- read.table(paths[3])
+      scan_meta <- utils::read.table(paths[3])
       id <- gsub('.*/|[.].*', '', paths[3])
       scan_meta[[2]] <- paste0(id, '_', scan_meta[[2]])
-      write.table(scan_meta, paths[3],
+      utils::write.table(scan_meta, paths[3],
         quote = FALSE, row.names = FALSE, col.names = FALSE)
     })
 

@@ -23,38 +23,38 @@
 setMethod("getSnpID",
   signature(object = "GenotypeDataSubset"),
   function(object, ...) {
-    callNextMethod(object, .actual_snp_indices(object, ...))
+    methods::callNextMethod(object, .actual_snp_indices(object, ...))
 })
 
 
 setMethod("getPosition",
   signature(object = "GenotypeDataSubset"),
   function(object, ...) {
-    callNextMethod(object, .actual_snp_indices(object, ...))
+    methods::callNextMethod(object, .actual_snp_indices(object, ...))
   })
 
 setMethod("getChromosome",
   signature(object = "GenotypeDataSubset"),
   function(object, ...) {
-    callNextMethod(object, .actual_snp_indices(object, ...))
+    methods::callNextMethod(object, .actual_snp_indices(object, ...))
   })
 
 setMethod("getAlleleA",
   signature(object = "GenotypeDataSubset"),
   function(object, ...) {
-    callNextMethod(object, .actual_snp_indices(object, ...))
+    methods::callNextMethod(object, .actual_snp_indices(object, ...))
   })
 
 setMethod("getAlleleB",
   signature(object = "GenotypeDataSubset"),
   function(object, ...) {
-    callNextMethod(object, .actual_snp_indices(object, ...))
+    methods::callNextMethod(object, .actual_snp_indices(object, ...))
   })
 
 setMethod("getScanID",
   signature(object = "GenotypeDataSubset"),
   function(object, ...) {
-    callNextMethod(object, .actual_scan_indices(object, ...))
+    methods::callNextMethod(object, .actual_scan_indices(object, ...))
   })
 
 setMethod("nsnp", "GenotypeDataSubset",
@@ -85,7 +85,8 @@ setMethod("getGenotype",
         object@scans_idx[seq.int(scan[1], length.out = len)]
       }
 
-    res <- fetch_genotypes(as(object, 'GenotypeData'), snps_idx, scans_idx, ...)
+    res <- fetch_genotypes(methods::as(object, 'GenotypeData'),
+      snps_idx, scans_idx, ...)
 
     # bloody drop
     d <- dim(res)

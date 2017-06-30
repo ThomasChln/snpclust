@@ -13,7 +13,7 @@ fetch_genotypes <- function(
   char = FALSE,
   snps_first = is_snp_first_dim(gdata)) {
 
-  stopifnot(is(gdata, 'GenotypeData'))
+  stopifnot(methods::is(gdata, 'GenotypeData'))
 
   genos <- NULL
   if (is.null(snps_idx) && is.null(scans_idx)) {
@@ -40,13 +40,13 @@ fetch_genotypes <- function(
 }
 
 .is_block <- function(v) {
-  (tail(v, 1) == v[1] + length(v) - 1L) && !is.unsorted(v)
+  (utils::tail(v, 1) == v[1] + length(v) - 1L) && !is.unsorted(v)
 }
 
 
 .split_sorted_ints_by_blocks <- function(ints) {
   # try to be smart by testing obvious use cases first
-  if (tail(ints, 1) == ints[1] + length(ints) - 1) {
+  if (utils::tail(ints, 1) == ints[1] + length(ints) - 1) {
     return(list(c(ints[1], length(ints))))
   }
 
@@ -354,8 +354,8 @@ load_gds_as_genotype_data <- function(gds_file, read_snp_annot = TRUE,
 
 # temp wrapper for snpgdsOpen while it is not mainstream
 snp_gds_open <- function(...) {
-  library(SNPRelate) # lazy-loading, needs to be in search path
-  gds <- snpgdsOpen(...)
+  SNPRelate <- NULL; Library <- library; Library(SNPRelate)
+  gds <- SNPRelate::snpgdsOpen(...)
 
   # hack: some GWASTools functions check for gds.class
   class(gds) <- "gds.class"
@@ -415,9 +415,9 @@ gds_genotype_reader <- function(gds, ...) {
   }
 
   genotypeDim <- if (is_snp_first_dim(gds)) "snp,scan" else "scan,snp"
-  gdsreader <- new('GdsReader', filename = gds$filename, handler = gds)
+  gdsreader <- methods::new('GdsReader', filename = gds$filename, handler = gds)
 
-  new('GdsGenotypeReader', gdsreader, genotypeDim = genotypeDim, ...)
+  methods::new('GdsGenotypeReader', gdsreader, genotypeDim = genotypeDim, ...)
 }
 
 

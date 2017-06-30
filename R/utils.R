@@ -55,7 +55,7 @@ import_gds <- function(dirpath, gdsname) {
       '--recode --tab --out pedfile'))
   on.exit(file.remove(paste0('pedfile.', c('ped', 'map', 'log'))))
   geno <- readLines('pedfile.ped')
-  snps <- read.table('pedfile.map')
+  snps <- utils::read.table('pedfile.map')
 
   l_gds <- .import_gds(geno, snps)
 
@@ -80,8 +80,8 @@ import_gds <- function(dirpath, gdsname) {
 }
 
 .impute_bed <- function(path, probe_ids, scan_ids, impute = sample_impute) {
-  df_scans <- read.table(paste0(path, '.fam'))[as.numeric(scan_ids), ]
-  write.table(df_scans, 'scans', sep = ' ',
+  df_scans <- utils::read.table(paste0(path, '.fam'))[as.numeric(scan_ids), ]
+  utils::write.table(df_scans, 'scans', sep = ' ',
     quote = FALSE, row.names = FALSE, col.names = FALSE)
   .system2('plink', paste('--bfile', path,
       '--snps', paste(probe_ids, collapse = ','),
@@ -107,8 +107,8 @@ import_gds <- function(dirpath, gdsname) {
 }
 
 .untar_bed_targz <- function(path) {
-  untar(path, compressed = TRUE)
-  paths <- untar(path, list = TRUE)
+  utils::untar(path, compressed = TRUE)
+  paths <- utils::untar(path, list = TRUE)
   gsub('[.].*', '', paths[grep('[.]bed$', paths)])
 }
 
@@ -205,7 +205,7 @@ check_arg <- function(spec, value, argname = deparse(substitute(value)),
   type <- arg_fmt$type
   if (type != 'any') {
     rtype <- if (type == .STRING) 'character' else type
-    die_unless(is(value, rtype), .msg('expected type %s, got %s', rtype,
+    die_unless(methods::is(value, rtype), .msg('expected type %s, got %s', rtype,
         class(value)))
     if (type == .STRING) {
       die_unless(all(nzchar(value)), .msg('empty strings are not allowed'))

@@ -185,10 +185,10 @@ ggplot_pca    <- function(pca,
   PCA_VARNAME <- NULL
 
   # dispatch on qb_pca and pca
-  if (is(pca, 'qb_pca')) {
+  if (methods::is(pca, 'qb_pca')) {
     pca <- pca_fortify(pca, obs, obs_sup, vars, vars_sup,
       pc_variance)
-  } else if (!is(pca, 'pca')) {
+  } else if (!methods::is(pca, 'pca')) {
     stop('pca must be either a qb_pca or a pca object')
   }
 
@@ -247,7 +247,7 @@ all_obs <- c(
 
 
     #do not show guide if only active observations
-    if (is(obs_sup, 'logical') && !obs_sup) {
+    if (methods::is(obs_sup, 'logical') && !obs_sup) {
       plt <- plt + guides(alpha = FALSE, shape = FALSE)
     }
 
@@ -300,6 +300,16 @@ all_vars <- c(
   plt + theme_bw()
 }
 
+#' Get PCA pairs panels
+#'
+#' Get the pair combinations panels of Principal Components.
+#'
+#' @inheritParams ggplot_pca
+#' @param axes     Sequence of axes to display
+#' @param max_vars Number of variables to display
+#' @param ... Passed to ggplot_pca
+#' @return NULL
+#' @export
 get_pca_panels <- function(pca, axes = 1:4, groups = NULL, max_vars = 0L,
   ...) {
 
@@ -315,7 +325,7 @@ get_pca_panels <- function(pca, axes = 1:4, groups = NULL, max_vars = 0L,
   }
 
   # Get PC plots
-  df_axes <- combn(axes, 2)
+  df_axes <- utils::combn(axes, 2)
   vars_idxs <- which(pca$PCA_VARTYPE == 'VAR')
   seq_vars <- seq_len(min(max_vars, length(vars_idxs)))
   plots <- apply(df_axes, 2, function(axes) {
@@ -400,16 +410,15 @@ grob_pca_panels <- function(plots, only_panels = TRUE, legend = FALSE) {
 #'
 #' Plots the pair combinations of Principal Components.
 #'
-#' @inheritParams snpclust:::get_pca_panels
+#' @inheritParams get_pca_panels
 #' @inheritParams ggplot_pca
-#' @param max_vars Number of variables to display
 #' @param ... Passed to get_pca_panels
 #' @return NULL
 #' @export
 plot_pca_pairs <- function(axes, ..., max_vars = 0L, ellipses = TRUE) {
   ggplts <- get_pca_panels(axes = axes, ..., max_vars = max_vars,
     ellipses = ellipses)
-  plot(grob_pca_panels(ggplts))
+  graphics::plot(grob_pca_panels(ggplts))
 }
 
 reorder_pca <- function(df_all_obs, nas_first, groups) {
@@ -440,14 +449,14 @@ create_pca_axis_labels <- function(pca, pc_variance = TRUE, axes,
 
 stat_ellipse <- function(mapping = NULL, data = NULL, geom = "polygon",
   position = "identity", alpha = 0.1, ...) {
-  library(proto)
+  proto <- NULL; Library <- library; Library(proto)
 
   ### Stat is not exported. Let's trick R CMD check
   Stat <- get('Stat', envir = getNamespace('ggplot2'))
   GeomPolygon <- get('GeomPolygon', envir = getNamespace('ggplot2'))
   .super <- NULL # dummy
 
-  StatEllipse <- proto(Stat, {
+  StatEllipse <- proto::proto(Stat, {
       required_aes <- c("x", "y")
       default_geom <- function(.) GeomPolygon
       objname <- "ellipse"
@@ -462,10 +471,10 @@ stat_ellipse <- function(mapping = NULL, data = NULL, geom = "polygon",
         ellipse <- if (dfd < 3) {
             rbind(c(NA,NA))
           } else {
-            v <- cov.wt(cbind(data$x, data$y))
+            v <- stats::cov.wt(cbind(data$x, data$y))
             shape <- v$cov
             center <- v$center
-            radius <- sqrt(dfn * qf(ci, dfn, dfd))
+            radius <- sqrt(dfn * stats::qf(ci, dfn, dfd))
             angles <- (0:segments) * 2 * pi / segments
             unit.circle <- cbind(cos(angles), sin(angles))
             t(center + radius * t(unit.circle %*% chol(shape)))
@@ -541,8 +550,9 @@ scale_pca_vars <- function(df_all_vars, names_axe, scale_sdev = FALSE, scale = 1
   scale <- .7 * scale / max_var
   df_all_vars[vars, names_axe] <- df_all_vars[vars, names_axe] * scale
 
-  df_all_vars  <- select_(df_all_vars, .dots = c("PCA_VARNAME", "PCA_VARTYPE", names_axe)) %>%
-    filter(PCA_VARTYPE != 'OTHER')
+  df_all_vars  <- dplyr::select_(df_all_vars,
+    .dots = c("PCA_VARNAME", "PCA_VARTYPE", names_axe)) %>%
+    dplyr::filter(PCA_VARTYPE != 'OTHER')
 
   df_all_vars
 }

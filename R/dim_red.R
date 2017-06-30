@@ -32,7 +32,7 @@ haplo_features <- function(m_data, order_idxs = FALSE) {
 .merge_haplotypes <- function(m_snps, max_n_snps = 100, n_mixtures = 2) {
   # estimate 2 gaussian mixtures, use hclust if too large for performance
   if (ncol(m_snps) > max_n_snps) {
-    return(.hclust_classif(hclust(dist(m_snps))))
+    return(.hclust_classif(stats::hclust(stats::dist(m_snps))))
   }
   clust <- catch_warnings(mclust::Mclust(m_snps, n_mixtures))
 
@@ -42,7 +42,7 @@ haplo_features <- function(m_data, order_idxs = FALSE) {
   if (length(clust[[2]]) != 0) {
     # bug where mclust gives only one group, use hclust 
     if (length(clust[[2]]) == 1 && grepl('no assignment to', clust[[2]][[1]])) {
-      .hclust_classif(hclust(dist(m_snps)))
+      .hclust_classif(stats::hclust(stats::dist(m_snps)))
     } else stop(clust[[2]])
   } else {
     clust[[1]]$classification
@@ -50,7 +50,7 @@ haplo_features <- function(m_data, order_idxs = FALSE) {
 }
 
 .hclust_classif <- function(hcl) {
-  merged_haplos <- cutree(hcl, 2)
+  merged_haplos <- stats::cutree(hcl, 2)
   reorder <- cbind(seq_along(merged_haplos), merged_haplos)[hcl$order, ]
   reorder[, 2] <- as.numeric(factor(reorder[, 2], unique(reorder[, 2])))
   reorder[order(reorder[, 1]), 2]
@@ -118,7 +118,7 @@ haplo_mcmc <- function(path, probe_ids, n_cores = 1) {
   haplo_id <- paste0('hap', 1:2, 'code')
   scan_id <- sapply(haplo_id, paste0, '.', seq_len(n_scan_haplo / 2))
   scan_id <- as.vector(t(scan_id))
-  df_scans <- na.omit(data.frame(scan_haplos, scan_id, 1))
+  df_scans <- stats::na.omit(data.frame(scan_haplos, scan_id, 1))
   m_scans <- reshape2::acast(df_scans, scan_haplos ~ scan_id, value.var = 'X1', fill = 0)
 
   m_haplo <- cbind(frequency, m_snps, m_scans)

@@ -49,7 +49,7 @@ get_pca    <- function(data, id_col, obs = NULL, vars = NULL, center = TRUE,
     scale = scale)
 
   # create qbpca class
-  qb_pca <- new("qb_pca",
+  qb_pca <- methods::new("qb_pca",
     pca = mypca,
     data = data,
     obs = as.character(obs),
@@ -63,7 +63,7 @@ get_pca    <- function(data, id_col, obs = NULL, vars = NULL, center = TRUE,
 }
 
 compute_pca_prcomp <- function(data, center = TRUE, scale = TRUE) {
-  prcomp(data,
+  stats::prcomp(data,
     retx = TRUE,
     center = center,
     scale. = scale)
@@ -184,7 +184,7 @@ compute_var_coords_numeric <- function(x, df_values) {
   ind <- match(ids, df_values[[1]])
   values <- df_values[ind, 2, drop = TRUE]
 
-  cor(scale(values), x)
+  stats::cor(scale(values), x)
 }
 
 compute_var_coords_categorical <- function(qb_pca, data_active, varname) {

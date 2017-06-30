@@ -17,6 +17,7 @@
 #'                    phenotype 
 #' @param n_axes      Number of principal components to consider
 #' @param n_cores     Number of cores to use
+#' @param only_pca    Logical, compute only PCA and exit
 #' @param ...         Passed to snprelate_qc 
 #' @return List of slots: 
 #'           pca - PCA applied to the quality controlled dataset,
@@ -121,9 +122,9 @@ transitive_tagsnp <- function(m_data, r2 = .8) {
 .transitive_tagsnp <- function(m_data, r2) {
   col_idx <- if (ncol(m_data) > 1) {
       m_data <- m_data[, ncol(m_data):1]
-      m_ld <- cor(m_data) ^ 2
+      m_ld <- stats::cor(m_data) ^ 2
       m_ld[upper.tri(m_ld, TRUE)] <- NA
-      df_ld <- na.omit(reshape2::melt(m_ld))
+      df_ld <- stats::na.omit(reshape2::melt(m_ld))
       unlist(lapply(colnames(m_data), .tagsnp, df_ld, r2))
     } else 1
 
@@ -199,6 +200,7 @@ transitive_tagsnp <- function(m_data, r2 = .8) {
 }
 
 get_polymorphic_cols <- function(data) {
-  cols <- apply(as.matrix(data), 2, function(vect) var(na.omit(vect)))
+  cols <- apply(as.matrix(data), 2,
+    function(vect) stats::var(stats::na.omit(vect)))
   as.logical(cols)
 }
