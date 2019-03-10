@@ -353,5 +353,5 @@ setClass("qb_pca",
     obs_sup = "character",
     vars = "character",
     vars_sup = "character"
-  )
+  ), package = 'snpclust'
 )

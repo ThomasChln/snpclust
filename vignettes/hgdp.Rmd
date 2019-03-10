@@ -9,6 +9,7 @@ SNPClust is demonstrated here on a small subset of the Human Genome Diversity Pr
 
 ```{r, message = FALSE, warning = FALSE}
 library(snpclust)
+library(magrittr)
 ```
 
 The HGDP files are first converted to the snpgds format (cf. R package SNPRelate).
@@ -20,7 +21,7 @@ gds_path <- save_hgdp_as_gds()
 SNPClust is then called on the GDS filepath.
 
 ```{r, message = FALSE, warning = FALSE}
-snpclust_object <- snpclust(gds = gds_path)
+snpclust_object <- snpclust(gds = gds_path, n_axes = 20)
 ```
 ```{r, echo = FALSE, results = 'hide'}
 file.remove(gds_path)

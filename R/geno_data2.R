@@ -65,35 +65,30 @@ save_hgdp_as_gds <- function(
   paths[3]
 }
 
-###############################################################################
-gds_to_bedtargz <- function(gds, tarpath = gsub('gds$', 'tar.gz', gds)) {
-  # get plink files with gds
-  tarname <- gsub('[.]tar[.]gz$', '', tarpath)
-  .gds_to_bedtargz(gds, tarname)
+gds_to_bed <- function(gds) {
+  name = gsub('.gds', '', gds)
+  snprelate_gds_to_bed(name)
 
   # replace snp probe ids by ones from gdata 
   gdata <- load_gds_as_genotype_data(gds)
   on.exit(close(gdata))
-  bim <- paste0(tarname, '.bim')
+  bim <- paste0(name, '.bim')
   df_snps <- utils::read.table(bim, sep = '\t')
   df_snps[[2]] <- gdata@snpAnnot@data$probe_id 
   utils::write.table(df_snps, bim, sep = '\t',
     row.names = FALSE, col.names = FALSE, quote = FALSE)
 
-  plink_files <- paste0(tarname, '.', c('bed', 'bim', 'fam'))
-  tarcmd <- paste('-czf', tarpath, paste(plink_files, collapse = ' '))
-  system2('tar', tarcmd)
-  file.remove(plink_files)
-  tarpath
+  lapply(name, paste0, '.', c('bed', 'bim', 'fam'))
 }
 
-.gds_to_bedtargz <- function(gds, tarname) {
-  gdsobj <- SNPRelate::snpgdsOpen(gds, FALSE)
+# get plink files with gds
+snprelate_gds_to_bed <- function(name) {
+  gdsobj <- paste0(name, '.gds') %>% SNPRelate::snpgdsOpen(FALSE)
   on.exit(closefn.gds(gdsobj))
   if (any(grepl('snp[.]allele', utils::capture.output(print(gdsobj))))) {
     delete.gdsn(index.gdsn(gdsobj, 'snp.allele'))
   }
-  SNPRelate::snpgdsGDS2BED(gdsobj, tarname, verbose = FALSE)
+  SNPRelate::snpgdsGDS2BED(gdsobj, name, verbose = FALSE)
 }
 
 actg_tsv_to_gdata <- function(geno_path, scans_path,
@@ -204,36 +199,13 @@ build_gwastools <- function(geno, scans, snps) {
   GenotypeData(geno, snps, scans)
 }
 
-bed_targz_to_gds <- function(tarpath, gdspath) {
-  check_fx_args(tarpath = '!C1', gdspath = '!C1')
-  die_unless(file.exists(tarpath), paste('File does not exist:', tarpath))
-  tmp_dir <- setup_temp_dir(FALSE)
-  paths <- .untar_bed(tarpath, tmp_dir)
-
+bed_to_gds <- function(paths, gds) {
   do.call(SNPRelate::snpgdsBED2GDS,
     append(paths[c(1, 3, 2)], list(gdspath, verbose = FALSE)))
 }
 
-###############################################################################
-.untar_bed <- function(tarpath, tmp_dir) {
-  paths <- utils::untar(tarpath, list = TRUE)
-  patterns <- paste0('[.]', c('bed', 'bim', 'fam'), '$')
-  idxs <- sapply(patterns, grep, paths)
-  # if the idxs are in a list, at least one pattern is not found
-  die_if(inherits(idxs, 'list'), {
-      missing <- patterns[!sapply(idxs, length)]
-      paste('Pattern not found in tar file:', paste(missing, collapse = ', '))
-    })
-  paths <- paths[idxs]
-  utils::untar(tarpath, paths, exdir = tmp_dir, compressed = TRUE)
-
-  file.path(tmp_dir, paths)
-}
-
-###############################################################################
 .gds_read_index <- function(field, gds) read.gdsn(index.gdsn(gds, field))
 
-###############################################################################
 # Format GDS sample annotations to comply with plink format
 # which is expected from the function SNPRelate::snpgdsBED2GDS
 # set sample.annot first two fields as sex and phenotype
@@ -252,12 +224,8 @@ bed_targz_to_gds <- function(tarpath, gdspath) {
   add.gdsn(gds, 'sample.annot', df_plink_info)
 }
 
-plink_merge <- function(tar_paths, dir, outpath = 'merge') {
-  if (system('plink', ignore.stdout = TRUE) == 127) stop('plink not found')
-  check_fx_args(tar_paths = '!C+', outpath = '!C1')
-  l_paths <- lapply(tar_paths, .untar_bed, dir)
-
-  # get common SNPs
+# get common SNPs
+write_common_snps = function(l_paths) {
   snp_files <- sapply(l_paths, function(paths) grep('[.]bim$', paths))
   snps <- utils::read.table(l_paths[[1]][snp_files[1]])[[2]]
   for (index in seq_along(l_paths)[-1]) {
@@ -265,17 +233,19 @@ plink_merge <- function(tar_paths, dir, outpath = 'merge') {
     snps <- intersect(snps, snps_match)
   }
   write(as.character(snps), 'common_snps')
+}
 
-  # add dataset id to observation names
-  lapply(l_paths, function(paths) {
-      scan_meta <- utils::read.table(paths[3])
-      id <- gsub('.*/|[.].*', '', paths[3])
-      scan_meta[[2]] <- paste0(id, '_', scan_meta[[2]])
-      utils::write.table(scan_meta, paths[3],
-        quote = FALSE, row.names = FALSE, col.names = FALSE)
-    })
+# add dataset id to observation names
+write_scan_dataset_id = function(paths) {
+  scan_meta <- utils::read.table(paths[3])
+  id <- gsub('.*/|[.].*', '', paths[3])
+  scan_meta[[2]] <- paste0(id, '_', scan_meta[[2]])
+  utils::write.table(scan_meta, paths[3],
+    quote = FALSE, row.names = FALSE, col.names = FALSE)
+}
 
-  # write filenames and merge
+# write filenames and merge
+plink_merge_beds <- function(l_paths, dir, outpath) {
   path <- gsub('[.][a-z]+$', '', l_paths[[1]][1])
   paths <- sapply(l_paths[-1], paste, collapse = ' ')
   writeLines(paste(paths, collapse = '\n'), 'file_list')
@@ -284,7 +254,18 @@ plink_merge <- function(tar_paths, dir, outpath = 'merge') {
     '--extract common_snps --merge-list file_list --make-bed --allow-no-sex',
     '--filter-cases --out', outpath, '> /dev/null')
   system2('plink', cmd_merge)
+  cmd_merge
+}
 
+plink_merge <- function(l_paths, dir, outpath) {
+  if (system('plink', ignore.stdout = TRUE) == 127) stop('plink not found')
+  write_common_snps(l_paths)
+  lapply(l_paths, write_scan_dataset_id)
+  plink_merge_beds(l_paths, dir, outpath) %>% plink_allele_flip(outpath, path, .)
+  paste0(outpath, '.', c('bed', 'bim', 'fam'))
+}
+
+plink_allele_flip = function(outpath, path, cmd_merge) {
   # allele flip if needed
   logfile <- readLines(paste0(outpath, '.log'))
   error_regexp <- 'Error: [0-9]+ variants with 3[+] alleles present'
@@ -295,6 +276,4 @@ plink_merge <- function(tar_paths, dir, outpath = 'merge') {
     system2('plink', cmd_flip)
     system2('plink', cmd_merge)
   }
-
-  paste0(outpath, '.', c('bed', 'bim', 'fam'))
 }

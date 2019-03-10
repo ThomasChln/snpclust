@@ -1,12 +1,11 @@
 
-################################################################################
 #' snpclust
 #'
 #' Snpclust performs unsupervised feature selection and summarization based on
 #' Principal Component Analysis, Gaussian Mixture Models, and Markov Chain
 #' Monte Carlo.
 #'
-#' @param tar_paths   Path(s) of tar.gz files containing PLINK binary files.
+#' @param paths       Paths of PLINK binary files.
 #'                    If missing, files are generated with the gds file.
 #' @param gds         Path of Genomic Data Structure file 
 #' @param subsets     Character vector for subsetting the dataset.
@@ -31,12 +30,12 @@
 #'
 #' @author tcharlon
 #' @export
-snpclust <- function(tar_paths, gds, subsets = '', n_axes = 1e2,
-  n_cores = 2, only_pca = FALSE, ...) {
+snpclust <- function(paths, gds, subsets = '', n_axes = 1e2,
+  n_cores = 1, only_pca = FALSE, ...) {
 
-  if (missing(tar_paths)) {
-    tar_paths <- gds_to_bedtargz(normalizePath(gds))
-    on.exit(file.remove(tar_paths))
+  if (missing(paths)) {
+    paths <- gds_to_bed(normalizePath(gds))
+    on.exit(file.remove(paths))
   }
 
   # subset gdata, qc and pca
@@ -48,7 +47,7 @@ snpclust <- function(tar_paths, gds, subsets = '', n_axes = 1e2,
 
   if (!only_pca) {
     # haplotypes estimation, merging, and weighting by PC rank and contributions 
-    haplos <- lapply(snpclust_obj$pca, .snpclust_features, gdata, tar_paths, 0,
+    haplos <- lapply(snpclust_obj$pca, .snpclust_features, gdata, paths, 0,
       n_cores)
     snpclust_obj$peaks <- lapply(haplos, attr, 'peaks')
     snpclust_obj$max_contributor <- lapply(haplos, attr, 'max_contributor')
@@ -131,7 +130,7 @@ transitive_tagsnp <- function(m_data, r2 = .8) {
   m_data[, col_idx, drop = FALSE]
 }
 
-.snpclust_features <- function(df_pca, gdata, tar_paths, n_pcs, n_cores) {
+.snpclust_features <- function(df_pca, gdata, paths, n_pcs, n_cores) {
   PCA_VARTYPE <- NULL
   df_vars <- subset(df_pca, PCA_VARTYPE == 'VAR')
   snp_ids <- gsub('VAR_', '', df_vars$PCA_VARNAME)
@@ -146,13 +145,13 @@ transitive_tagsnp <- function(m_data, r2 = .8) {
   l_peaks_copy <- l_peaks
   l_peaks <- unlist(lapply(l_peaks, .separate_peaks, df_snp), FALSE)
 
-  # Untar and impute bed, then estimate haplotypes and get SNPs
+  # impute bed, then estimate haplotypes and get SNPs
   df_obs <- subset(df_pca, PCA_VARTYPE == 'OBS')
   scan_ids <- as.numeric(gsub('OBS_', '', df_obs$PCA_VARNAME))
-  setup_temp_dir()
-  .untar_impute_bed(tar_paths, df_snp, l_peaks,
-     match(scan_ids, GWASTools::getScanID(gdata)))
-  l_haplo <- .estimate_haplotypes(l_peaks, n_cores, df_snp)
+  tmpfile = tempfile()
+  impute_bed(paths, df_snp, l_peaks,
+     match(scan_ids, GWASTools::getScanID(gdata)), tmpfile)
+  l_haplo <- .estimate_haplotypes(l_peaks, n_cores, df_snp, tmpfile)
   l_haplo <- .add_SNPs(l_haplo, df_vars, gdata, scan_ids)
 
   # get SNPs in haplotypes and maximum contributions

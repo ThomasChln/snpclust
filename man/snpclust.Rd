@@ -4,11 +4,11 @@
 \alias{snpclust}
 \title{snpclust}
 \usage{
-snpclust(tar_paths, gds, subsets = "", n_axes = 100, n_cores = 2,
+snpclust(paths, gds, subsets = "", n_axes = 100, n_cores = 1,
   only_pca = FALSE, ...)
 }
 \arguments{
-\item{tar_paths}{Path(s) of tar.gz files containing PLINK binary files.
+\item{paths}{Paths of PLINK binary files.
 If missing, files are generated with the gds file.}
 
 \item{gds}{Path of Genomic Data Structure file}

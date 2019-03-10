@@ -65,37 +65,34 @@ import_gds <- function(dirpath, gdsname) {
   save_genotype_data_as_gds(gdata, gdsname)
 }
 
-
-###############################################################################
-.untar_impute_bed <- function(tar_paths, df_snp, l_peaks, scan_ids) {
-  if (length(tar_paths) > 1) {
-    plink_merge(tar_paths, '.', 'bedfile')
-  } else {
-    paths <- .untar_bed(tar_paths, '.')
-    file.rename(paths, gsub('.*[.]', 'bedfile.', paths))
+impute_bed <- function(l_paths, df_snp, l_peaks, scan_ids, out,
+  impute = sample_impute) {
+  if (length(l_paths) > 1) plink_merge(l_paths, '.', out) else {
+    l_paths[[1]] %>% file.rename(
+      paste0(out, gsub('.*([.][a-z]+)$', '\\1', .)))
   }
-  probe_ids <- df_snp$probe_id[sort(unique(unlist(l_peaks)))]
-
-  .impute_bed('bedfile', probe_ids, scan_ids)
+  df_snp$probe_id[sort(unique(unlist(l_peaks)))] %>%
+    plink_extract(out, ., scan_ids) %>% snprelate_impute(out, impute)
 }
 
-.impute_bed <- function(path, probe_ids, scan_ids, impute = sample_impute) {
-  df_scans <- utils::read.table(paste0(path, '.fam'))[as.numeric(scan_ids), ]
-  utils::write.table(df_scans, 'scans', sep = ' ',
-    quote = FALSE, row.names = FALSE, col.names = FALSE)
-  .system2('plink', paste('--bfile', path,
-      '--snps', paste(probe_ids, collapse = ','),
-      '--keep scans --make-bed --out'))
-  params <- as.list(paste0('output_plink.', c('bed', 'fam', 'bim')))
-  do.call(SNPRelate::snpgdsBED2GDS, c(params, 'gds', verbose = FALSE))
-
-  gds <- openfn.gds('gds', FALSE)
+snprelate_impute <- function(params, path, impute) {
+  tmpfile = tempfile()
+  do.call(SNPRelate::snpgdsBED2GDS, c(params, tmpfile, verbose = FALSE))
+  gds <- openfn.gds(tmpfile, FALSE)
   geno <- .gds_read_index('genotype', gds)
   geno[geno == 3] <- NA
   write.gdsn(index.gdsn(gds, 'genotype'), impute(geno))
   closefn.gds(gds)
+  SNPRelate::snpgdsGDS2BED(tmpfile, path, verbose = FALSE)
+}
 
-  SNPRelate::snpgdsGDS2BED('gds', path, verbose = FALSE)
+plink_extract <- function(path, probe_ids, scan_ids) {
+  df_scans <- utils::read.table(paste0(path, '.fam'))[as.numeric(scan_ids), ]
+  utils::write.table(df_scans, 'scans', sep = ' ',
+    quote = FALSE, row.names = FALSE, col.names = FALSE)
+  .system2('plink', paste('--bfile', path, '--snps', paste(probe_ids, collapse = ','),
+      '--keep scans --make-bed --out'))
+  as.list(paste0('output_plink.', c('bed', 'fam', 'bim')))
 }
 
 .system2 <- function(exe, cmd) {
@@ -106,13 +103,6 @@ import_gds <- function(dirpath, gdsname) {
   if (!any(grepl(output, list.files()))) stop('Output file does not exist')
 }
 
-.untar_bed_targz <- function(path) {
-  utils::untar(path, compressed = TRUE)
-  paths <- utils::untar(path, list = TRUE)
-  gsub('[.].*', '', paths[grep('[.]bed$', paths)])
-}
-
-###############################################################################
 ids_subset <- function(positions, chromosome, df_snp) {
   subset <- df_snp$chromosome == chromosome &
     df_snp$position > positions[1] &
@@ -121,7 +111,6 @@ ids_subset <- function(positions, chromosome, df_snp) {
   df_snp$snpID[subset]
 }
 
-###############################################################################
 setup_temp_dir <- function(chdir = TRUE, ...) {
   dir <- tempfile(...)
   dir.create(dir, recursive = TRUE)

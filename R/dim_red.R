@@ -56,40 +56,27 @@ haplo_features <- function(m_data, order_idxs = FALSE) {
   reorder[order(reorder[, 1]), 2]
 }
 
-###############################################################################
-.estimate_haplotypes <- function(l_peaks, n_cores, df_snp) {
-
-  l_peaks <- lapply(l_peaks,
-    function(peaks) list(df_snp$probe_id[peaks], peaks))
-
+.estimate_haplotypes <- function(l_peaks, n_cores, df_snp, bedpath) {
+  l_peaks %<>% lapply(function(peaks) list(df_snp$probe_id[peaks], peaks))
   l_haplo <- parallel::mclapply(l_peaks, .get_haplos,
-    1, 'bedfile', mc.cores = n_cores, mc.set.seed = FALSE)
+    1, bedpath, mc.cores = n_cores, mc.set.seed = FALSE)
 }
 
 .get_haplos <- function(peaks, n_cores, path) {
   ids <- peaks[[1]]
   peaks <- peaks[[2]]
-  if (length(peaks) != 1) {
-    haplo_mcmc(path, ids, n_cores = n_cores)
-  } else {
-    peaks
-  }
+  if (length(peaks) != 1) haplo_mcmc(path, ids, n_cores = n_cores) else peaks
 }
 
 haplo_mcmc <- function(path, probe_ids, n_cores = 1) {
-  if (system('plink', ignore.stdout = TRUE) == 127) stop('plink not found')
   if (system('shapeit') == 127) stop('shapeit not found')
-
   if (!grepl('^/', path)) path <- file.path(getwd(), path)
   setup_temp_dir()
-  # Optional untar
-  if (grepl('[.]tar[.]gz$', path)) path <- .untar_bed_targz(path)
+
   # Subset file with plink
   .system2('plink', paste('--bfile', path, '--snps',
       paste(probe_ids, collapse = ','), '--make-bed --out'))
-  # Call shapeit
   .system2('shapeit', paste('-B output_plink --seed 1 -T', n_cores, '-O'))
-  # Read output
   df_haplo <- as.data.frame(data.table::fread('output_shapeit.haps'))
   rownames(df_haplo) <- probe_ids
   df_haplo <- df_haplo[-(1:5)]
