@@ -4,15 +4,15 @@
 \alias{ggplot_pca}
 \title{Ggplot a qb_pca object}
 \usage{
-ggplot_pca(pca, groups = NULL, axes = c(1, 2), obs = TRUE,
-  obs_sup = FALSE, vars = FALSE, vars_sup = FALSE, pc_variance = TRUE,
-  ellipses = FALSE, label = NULL, link = FALSE, alpha_fill = FALSE,
-  ellipses_ci = 0.95, white_panel = TRUE, nas_first = TRUE, ...)
+ggplot_pca(pca, group = NULL, axes = c(1, 2), obs = TRUE,
+  obs_sup = FALSE, vars = FALSE, vars_sup = FALSE,
+  pc_variance = TRUE, ellipses = FALSE, label = NULL, link = FALSE,
+  alpha_fill = FALSE, ellipses_ci = 0.95, nas_first = TRUE, ...)
 }
 \arguments{
 \item{pca}{pca or qb_pca object (which is fortified)}
 
-\item{groups}{Column index or name of qb_pca$data for the grouping of
+\item{group}{Column index or name of qb_pca$data for the grouping of
 observations.
   Default: NULL}
 
@@ -54,8 +54,6 @@ additional observations ?
 ellipses is FALSE.
   Default: .95}
 
-\item{white_panel}{Logical, changes standard panel theme}
-
 \item{nas_first}{Logical, rearranges data frame to put NAs in groups first}
 
 \item{...}{Passed to draw_pca_vars}
@@ -69,4 +67,3 @@ Ggplot a qb_pca object
 \author{
 tcharlon
 }
-

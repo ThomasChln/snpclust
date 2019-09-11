@@ -34,7 +34,7 @@ haplo_features <- function(m_data, order_idxs = FALSE) {
   if (ncol(m_snps) > max_n_snps) {
     return(.hclust_classif(stats::hclust(stats::dist(m_snps))))
   }
-  clust <- catch_warnings(mclust::Mclust(m_snps, n_mixtures))
+  clust <- catch_warnings(mclust::Mclust(m_snps, n_mixtures, verbose = FALSE))
 
   # delete 2 useless warnings
   msgs <- 'best model occurs at the|optimal number of clusters occurs at'
@@ -71,10 +71,9 @@ haplo_features <- function(m_data, order_idxs = FALSE) {
 haplo_mcmc <- function(path, probe_ids, n_cores = 1) {
   if (system('shapeit') == 127) stop('shapeit not found')
   if (!grepl('^/', path)) path <- file.path(getwd(), path)
-  setup_temp_dir()
 
   # Subset file with plink
-  .system2('plink', paste('--bfile', path, '--snps',
+  .system2('plink', paste('--noweb --bfile', path, '--snps',
       paste(probe_ids, collapse = ','), '--make-bed --out'))
   .system2('shapeit', paste('-B output_plink --seed 1 -T', n_cores, '-O'))
   df_haplo <- as.data.frame(data.table::fread('output_shapeit.haps'))

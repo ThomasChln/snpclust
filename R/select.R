@@ -36,7 +36,7 @@ peak_selection <- function(df_vars, chromosomes, n_cores = 2) {
 .peaks_with_gmm <- function(vars, n_vars = min(length(vars), 3e3)) {
   peaks_idxs <- order(vars, decreasing = TRUE)[seq_len(n_vars)]
   for (n_gmm in 2:6) {
-    mcl <- Mclust(vars[peaks_idxs], n_gmm)
+    mcl <- Mclust(vars[peaks_idxs], n_gmm, verbose = FALSE)
     class <- which(mcl$uncertainty == 0)
     if (length(class) < attr(vars, 'max')) break
   }

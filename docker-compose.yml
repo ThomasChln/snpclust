@@ -1,0 +1,9 @@
+version: '2'
+
+services:
+  vignette:
+    image: snpclust
+    volumes:
+      - ./:/snpclust
+    working_dir: /snpclust/vignettes/
+    command: R -e "rmarkdown::render('hgdp.Rmd')"

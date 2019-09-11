@@ -11,7 +11,7 @@ ggplot_manhat(pca, gdata, axes = paste0("PC", 1:10), byposition = TRUE,
 \item{pca}{PCA data frame, requires variable contributions}
 
 \item{gdata}{GenotypeData object with snpIDs matching df_vars column
-PCA_VARNAME}
+DIMRED_VARNAME}
 
 \item{axes}{Axes to plot}
 
@@ -30,4 +30,3 @@ ggplot
 \description{
 Displays Manhattan-like plot for SNPs contributions to Principal Components
 }
-

@@ -1,70 +1,4 @@
 
-fetch_hgdp <- function(paths) {
-  urls <- c('http://www.hagsc.org/hgdp/data/hgdp.zip', 
-    'ftp://ftp.cephb.fr/hgdp_v3/hgdp-ceph-unrelated.out')
-  for (i in 1:2) {
-    if (!file.exists(paths[i])) utils::download.file(urls[i], paths[i])
-  }
-}
-
-reduce_hgdp <- function(paths,
-  zippaths = paste0('hgdp/', c('HGDP_FinalReport_Forward.txt', 'HGDP_Map.txt')),
-  nsnp = -1, nscan = -1, region_selection = 'Europe') {
-
-  setup_temp_dir()
-  txts_paths <- utils::unzip(paths[1], zippaths, junkpaths = TRUE)
-  file_paths <- c(paths[2], txts_paths[2])
-
-# fread is bugged (since 1.9: it can not parse header with (first) empty var)
-  cols <- strsplit(readLines(txts_paths[1], 1), '\t')[[1]]
-  cols[1] <- 'V1'
-  geno <- data.table::fread(txts_paths[1], nrows = nsnp, data.table = FALSE)
-  names(geno) <- cols
-
-  l_files <- list(geno)
-  l_files[2:3] <- lapply(file_paths, function (i) data.table::fread(i, data.table = FALSE))
-
-  if (!is.null(region_selection)) {
-    l_files[[2]] <- l_files[[2]][grep(region_selection, l_files[[2]]$Region), ]
-  }
-
-  if (nscan != -1) l_files[[2]] <- l_files[[2]][seq_len(nscan), ]
-  idxs <- match(l_files[[2]][[1]], colnames(l_files[[1]]))
-  l_files[[2]] <- l_files[[2]][!is.na(idxs), ]
-  utils::write.table(l_files[[2]], paths[2], row.names = FALSE,
-    sep = '\t', quote = FALSE)
-  l_files[[3]] <- l_files[[3]][match(l_files[[1]][[1]], l_files[[3]][[1]]), ]
-  utils::write.table(l_files[[3]], txts_paths[2], row.names = FALSE, col.names = FALSE,
-    sep = '\t', quote = FALSE)
-  l_files[[1]] <- l_files[[1]][c(1, stats::na.omit(idxs))]
-  utils::write.table(l_files[[1]], txts_paths[1], row.names = FALSE,
-    sep = '\t', quote = FALSE)
-
-  dir.create('hgdp')
-  for (i in 1:2) file.rename(txts_paths[i], zippaths[i]) 
-  utils::zip(paths[1], zippaths)
-}
-
-#' save_hgdp_as_gds
-#' @param paths    Paths of the zip, txt, and gds files
-#' @param zippaths Paths of the genotype and snp files in the zip
-#' @return Path of the saved gds file
-#' @export
-save_hgdp_as_gds <- function(
-  paths = file.path(system.file('extdata', package = 'snpclust'),
-    paste0('hgdp.', c('zip', 'txt', 'gds'))),
-  zippaths = paste0('hgdp/', c('HGDP_FinalReport_Forward.txt', 'HGDP_Map.txt'))
-  ) {
-  setup_temp_dir()
-  txts_paths <- utils::unzip(paths[1], zippaths, junkpaths = TRUE)
-  actg_gdata <- actg_tsv_to_gdata(txts_paths[1], paths[2],
-    c('scan_id', 'gender', 'population', 'geographic_origin', 'region'),
-    txts_paths[2])
-  file.remove(txts_paths)
-  save_genotype_data_as_gds(actg_gdata, paths[3], quiet = TRUE)
-  paths[3]
-}
-
 gds_to_bed <- function(gds) {
   name = gsub('.gds', '', gds)
   snprelate_gds_to_bed(name)
@@ -78,7 +12,7 @@ gds_to_bed <- function(gds) {
   utils::write.table(df_snps, bim, sep = '\t',
     row.names = FALSE, col.names = FALSE, quote = FALSE)
 
-  lapply(name, paste0, '.', c('bed', 'bim', 'fam'))
+  name
 }
 
 # get plink files with gds
@@ -88,7 +22,7 @@ snprelate_gds_to_bed <- function(name) {
   if (any(grepl('snp[.]allele', utils::capture.output(print(gdsobj))))) {
     delete.gdsn(index.gdsn(gdsobj, 'snp.allele'))
   }
-  SNPRelate::snpgdsGDS2BED(gdsobj, name, verbose = FALSE)
+  suppressWarnings(SNPRelate::snpgdsGDS2BED(gdsobj, name, verbose = FALSE))
 }
 
 actg_tsv_to_gdata <- function(geno_path, scans_path,
@@ -160,7 +94,7 @@ actg_to_numeric <- function(snp, na_encoding = NA) {
 ###############################################################################
 # read and convert to factors
 txt_scans_to_df <- function(path, col_map) {
-  data <- as.data.frame(data.table::fread(path, '\t'))
+  data <- as.data.frame(data.table::fread(path, sep = '\t'))
   data <- data[!is.na(col_map)]
   names(data) <- stats::na.omit(col_map)
   id_idx <- match('scan_id', names(data))
@@ -172,7 +106,7 @@ txt_scans_to_df <- function(path, col_map) {
 ###############################################################################
 # read, convert to integers, and order
 txt_snps_to_df <- function(path, col_map) {
-  data <- as.data.frame(data.table::fread(path, '\t'))
+  data <- as.data.frame(data.table::fread(path, sep = '\t'))
   data <- data[!is.na(col_map)]
   names(data) <- stats::na.omit(col_map)
   data$chromosome <- as.integer(factor(data$chromosome,
@@ -201,7 +135,7 @@ build_gwastools <- function(geno, scans, snps) {
 
 bed_to_gds <- function(paths, gds) {
   do.call(SNPRelate::snpgdsBED2GDS,
-    append(paths[c(1, 3, 2)], list(gdspath, verbose = FALSE)))
+    append(paths[c(1, 3, 2)], list(gds, verbose = FALSE)))
 }
 
 .gds_read_index <- function(field, gds) read.gdsn(index.gdsn(gds, field))
@@ -250,18 +184,19 @@ plink_merge_beds <- function(l_paths, dir, outpath) {
   paths <- sapply(l_paths[-1], paste, collapse = ' ')
   writeLines(paste(paths, collapse = '\n'), 'file_list')
   outpath <- file.path(dir, outpath)
-  cmd_merge <- paste('--bfile', path,
+  cmd_merge <- paste('--noweb --bfile', path,
     '--extract common_snps --merge-list file_list --make-bed --allow-no-sex',
     '--filter-cases --out', outpath, '> /dev/null')
   system2('plink', cmd_merge)
-  cmd_merge
+  c(path, cmd_merge)
 }
 
 plink_merge <- function(l_paths, dir, outpath) {
   if (system('plink', ignore.stdout = TRUE) == 127) stop('plink not found')
   write_common_snps(l_paths)
   lapply(l_paths, write_scan_dataset_id)
-  plink_merge_beds(l_paths, dir, outpath) %>% plink_allele_flip(outpath, path, .)
+  plink_merge_beds(l_paths, dir, outpath) %>%
+    plink_allele_flip(outpath, .[1], .[2])
   paste0(outpath, '.', c('bed', 'bim', 'fam'))
 }
 
@@ -271,7 +206,7 @@ plink_allele_flip = function(outpath, path, cmd_merge) {
   error_regexp <- 'Error: [0-9]+ variants with 3[+] alleles present'
   if (any(grepl(error_regexp, logfile))) {
     warning(logfile)
-    cmd_flip <- paste0('--bfile ', path, ' --flip ', outpath,
+    cmd_flip <- paste0('--noweb --bfile ', path, ' --flip ', outpath,
       '-merge.missnp --make-bed --out ', path, ' > /dev/null')
     system2('plink', cmd_flip)
     system2('plink', cmd_merge)

@@ -30,4 +30,3 @@ ggplot
 Displays the selection of SNPs for each principal component. Peaks is a list
 of variable indexes corresponding to the pca object.
 }
-

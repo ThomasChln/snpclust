@@ -1,18 +1,24 @@
+---
+title: "SNPClust applied to the human genome diversity project"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: spacelab
+---
 <!--
-%\VignetteEngine{knitr::knitr}
-%\VignetteIndexEntry{SNPClust applied to Europeans}
+%\VignetteEngine{knitr::rmarkdown}
+%\VignetteIndexEntry{SNPClust applied to the human genome diversity project}
 -->
 
-# SNPClust 
-
-SNPClust is demonstrated here on a small subset of the Human Genome Diversity Project (HGDP) dataset: 157 European samples out of 940 and 5,000 SNPs out of 660,918.
+SNPClust is demonstrated here on a small subset of the human genome diversity project dataset: 157 European samples out of 940 and 5,000 SNPs out of 660,918.
 
 ```{r, message = FALSE, warning = FALSE}
 library(snpclust)
 library(magrittr)
 ```
 
-The HGDP files are first converted to the snpgds format (cf. R package SNPRelate).
+The files are first converted to the snpgds format (cf. R package SNPRelate).
 
 ```{r, message = FALSE, warning = FALSE}
 gds_path <- save_hgdp_as_gds()
@@ -35,20 +41,23 @@ Details about the quality control of the dataset are stored in a data frame.
 knitr::kable(snpclust_object$qc, 'markdown')
 ```
 
-# Principal Component Analysis (PCA)
+# Principal component analysis
 
-The results of PCA applied to the quality controlled dataset are stored in a long data frame.
+The results of principal component analysis (PCA) applied to the quality controlled dataset are stored in a long data frame.
 Here we see that samples are grouped by country of origin.
 
 ```{r}
-ggplot_pca(pca = snpclust_object$pca, groups = 'population', ellipses = TRUE)
-plot_pca_pairs(seq_axes = 1:3, pca = snpclust_object$pca, groups = 'population')
-plot_pca_pairs(seq_axes = 4:6, pca = snpclust_object$pca, groups = 'population')
+ggplot_pca(snpclust_object$pca, group = 'population', ellipses = TRUE)
+opticskxi::ggpairs(snpclust_object$pca, axes = 1:3, group = 'population') %>%
+  plot
+opticskxi::ggpairs(snpclust_object$pca, axes = 4:6, group = 'population') %>%
+  plot
+
 ```
 
-# SNPs contributions to Principal Components (PCs)
+# SNPs contributions to principal components
 
-For each PC, the absolute SNP contributions are displayed. SNPs are displayed by chromosome and position.
+For each prinicipal component, the absolute SNP contributions are displayed. SNPs are displayed by chromosome and position.
 
 ```{r}
 ggplot_manhat(pca = snpclust_object$pca, gdata = snpclust_object$gdata) 
@@ -68,9 +77,10 @@ ggplot_selection(peaks = snpclust_object$peaks, pca = snpclust_object$pca)
 When PCA is applied on the SNPClust selected dataset, samples are not grouped by geographic origin anymore.
 
 ```{r}
-ggplot_pca(pca = snpclust_object$features_pca, groups = 'population', ellipses = TRUE)
-plot_pca_pairs(seq_axes = 1:3, pca = snpclust_object$features_pca,
-  groups = 'population')
-plot_pca_pairs(seq_axes = 4:6, pca = snpclust_object$features_pca,
-  groups = 'population')
+ggplot_pca(pca = snpclust_object$features_pca, group = 'population',
+  ellipses = TRUE)
+opticskxi::ggpairs(snpclust_object$features_pca, axes = 1:3,
+  group = 'population') %>% plot
+opticskxi::ggpairs(snpclust_object$features_pca, axes = 4:6,
+  group = 'population') %>% plot
 ```

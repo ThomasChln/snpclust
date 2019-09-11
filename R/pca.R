@@ -1,4 +1,4 @@
-get_pca    <- function(data, id_col, obs = NULL, vars = NULL, center = TRUE,
+get_pca <- function(data, id_col, obs = NULL, vars = NULL, center = TRUE,
   scale = TRUE) {
 
   check_fx_args(data = '!d+', id_col = '!C1', obs = 'C+', vars = 'C+',
@@ -114,8 +114,8 @@ compute_pca_obs_sup  <- function(qb_pca_obj, obs) {
   }
   data_sup <- data_sup %*% qb_pca_obj@pca$rotation
   df_out <- as.data.frame(data_sup)
-  df_out$PCA_VARNAME <- rownames(df_out)
-  df_out$PCA_VARTYPE <- 'OBS_SUP'
+  df_out$DIMRED_VARNAME <- rownames(df_out)
+  df_out$DIMRED_VARTYPE <- 'OBS_SUP'
 
   df_out
 }
@@ -155,8 +155,8 @@ get_pca_individuals <- function(qb_pca, active = TRUE, sup = TRUE) {
   if (length(obs)) {
 #    sqrt_n_obs <- sqrt(length(qb_pca@obs))
     df_active <- as.data.frame(qb_pca@pca$x)# / sqrt_n_obs)
-    df_active$PCA_VARNAME <- rownames(df_active)
-    df_active$PCA_VARTYPE <- 'OBS'
+    df_active$DIMRED_VARNAME <- rownames(df_active)
+    df_active$DIMRED_VARTYPE <- 'OBS'
   }
 
   df_sup <- data.frame()
@@ -168,7 +168,7 @@ get_pca_individuals <- function(qb_pca, active = TRUE, sup = TRUE) {
   df_fortified <- df_rbind_all(df_active, df_sup)
 
   # merge PC with original data
-  df_fortified[[qb_pca@id_col]] <- df_fortified$PCA_VARNAME
+  df_fortified[[qb_pca@id_col]] <- df_fortified$DIMRED_VARNAME
 
   df_fortified <- dplyr::inner_join(qb_pca@data, df_fortified, by = qb_pca@id_col)
   # sort it to get behaviour compatible with dplyr-0.3
@@ -212,14 +212,14 @@ compute_var_coords_categorical <- function(qb_pca, data_active, varname) {
       out[1, ] <- NA
     }
     out <- as.data.frame(out)
-    out$PCA_VARNAME <- var_level
+    out$DIMRED_VARNAME <- var_level
 
     out
   }
 
   # get coords by levels
   mat_coords  <- plyr::ldply(all_levels, .compbylevel)
-  mat_coords$PCA_VARNAME <- paste(varname, mat_coords$PCA_VARNAME, sep = '_|_')
+  mat_coords$DIMRED_VARNAME <- paste(varname, mat_coords$DIMRED_VARNAME, sep = '_|_')
   # integrate variable name in colname
   mat_coords
 }
@@ -239,7 +239,7 @@ compute_pca_coords_vars_sup  <- function(qb_pca, vars) {
     if (is.numeric(df_values[[2]])) { # numerical
       current_values <- compute_var_coords_numeric(qb_pca@pca$x, df_values)
       current_values <- as.data.frame(current_values)
-      current_values$PCA_VARNAME <- varname
+      current_values$DIMRED_VARNAME <- varname
     } else {
       current_values <- compute_var_coords_categorical(qb_pca,
         data_active, varname)
@@ -266,14 +266,14 @@ get_pca_vars <- function(qb_pca, active = TRUE, sup = TRUE) {
   df_vars_active <- data.frame()
   if (length(vars)) { # get coordinates for active variables
     df_vars_active <- as.data.frame(qb_pca@pca$rotation[vars, ])
-    df_vars_active$PCA_VARNAME  <- vars
-    df_vars_active$PCA_VARTYPE  <- 'VAR'
+    df_vars_active$DIMRED_VARNAME  <- vars
+    df_vars_active$DIMRED_VARTYPE  <- 'VAR'
   }
 
   df_vars_sup <- data.frame()
   if(length(vars_sup)) { # get coordinates for active variables
     df_vars_sup <- compute_pca_coords_vars_sup(qb_pca, vars_sup)
-    df_vars_sup$PCA_VARTYPE  <- 'VAR_SUP'
+    df_vars_sup$DIMRED_VARTYPE  <- 'VAR_SUP'
   }
 
 
@@ -294,8 +294,9 @@ get_pca_explained_var <- function (qb_pca) {
 
   df_explained_var <- as.data.frame(rbind(explained_var, explained_var_percent))
   names(df_explained_var) <- colnames(qb_pca@pca$x)
-  df_explained_var$PCA_VARNAME <- c('Explained_variance', 'Explained_variance_percent')
-  df_explained_var$PCA_VARTYPE <- 'OTHER'
+  df_explained_var$DIMRED_VARNAME <- c('Explained_variance',
+    'Explained_variance_percent')
+  df_explained_var$DIMRED_VARTYPE <- 'OTHER'
 
   df_explained_var
 }

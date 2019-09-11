@@ -11,4 +11,3 @@ The snpclust function is the main function and can be called on a snpgds file pa
 Results can be displayed with several plots. A demo is available in the *SNPClust applied to Europeans* HTML vignette.
 }
 \keyword{package}
-

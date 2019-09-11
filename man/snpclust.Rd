@@ -5,7 +5,7 @@
 \title{snpclust}
 \usage{
 snpclust(paths, gds, subsets = "", n_axes = 100, n_cores = 1,
-  only_pca = FALSE, ...)
+  only_pca = FALSE, keep_tmp = FALSE, ...)
 }
 \arguments{
 \item{paths}{Paths of PLINK binary files.
@@ -25,6 +25,8 @@ phenotype}
 \item{n_cores}{Number of cores to use}
 
 \item{only_pca}{Logical, compute only PCA and exit}
+
+\item{keep_tmp}{Logical, keep temporary objects}
 
 \item{...}{Passed to snprelate_qc}
 }
@@ -47,4 +49,3 @@ Monte Carlo.
 \author{
 tcharlon
 }
-

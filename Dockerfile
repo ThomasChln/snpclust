@@ -1,11 +1,9 @@
-from thomaschln/r-devtools
+from thomaschln/r-publish
 
-################################################################################
-# Install plink, copy pasted from
+# Install plink, copied from
 # https://github.com/GELOG/plink/blob/v1.07/plink-1.07-bin/docker/Dockerfile 
-# Removed installation of unzip and wget (already included) and autoremove
-# Changed to http://zzz.bwh.harvard.edu (March 2017)
-################################################################################
+# Changed to http://zzz.bwh.harvard.edu
+
 # Environment variables
 env PLINK_VERSION       1.07
 env PLINK_HOME          /usr/local/plink
@@ -18,28 +16,18 @@ run wget http://zzz.bwh.harvard.edu/plink/dist/plink-$PLINK_VERSION-x86_64.zip &
     ln -s plink-$PLINK_VERSION-x86_64 $PLINK_HOME && \
     rm -rf /var/lib/apt/lists/*
 
-# WORKAROUND: plink hangs if not started with '--noweb' option
-# See issue #1
-RUN echo '#!/bin/bash'                                                 > /usr/local/bin/plink && \
-    echo '#Launch the real plink script forcing the --noweb argument' >> /usr/local/bin/plink && \
-    echo '/usr/local/plink/plink --noweb "$@"'                        >> /usr/local/bin/plink && \
-    chmod a+x /usr/local/bin/plink
-
-################################################################################
 # Install SHAPEIT
 # https://mathgen.stats.ox.ac.uk/genetics_software/shapeit/shapeit.html
-################################################################################
-run wget -O shapeit.tgz https://mathgen.stats.ox.ac.uk/genetics_software/shapeit/shapeit.v2.r837.GLIBCv2.12.Linux.static.tgz \
-  && tar -zxvf shapeit.tgz
+run wget -O shapeit.tgz https://mathgen.stats.ox.ac.uk/genetics_software/shapeit/shapeit.v2.r904.glibcv2.17.linux.tar.gz \
+  && tar -zxvf shapeit.tgz \
+  && mv /shapeit.v2.904.3.10.0-693.11.6.el7.x86_64/bin/shapeit /bin/
 
-################################################################################
+
 # Install SNPClust 
-################################################################################
 
-run apt-get update
-run apt-get install -t unstable -y libnetcdf-dev
-run R -e "source('https://bioconductor.org/biocLite.R');biocLite('GWASTools')"
-run R -e "devtools::install_github('ThomasChln/snpclust')"
-run R -e "install.packages(c('data.table', 'dplyr', 'knitr', 'proto'))"
+run apt-get update && apt-get install -y libnetcdf-dev
+run R -e "install.packages('BiocManager');BiocManager::install('GWASTools')"
 run R -e "devtools::install_github('zhengxwen/SNPRelate')"
 
+add ./ snpclust/
+run R -e "devtools::install('snpclust', dependencies = TRUE)"

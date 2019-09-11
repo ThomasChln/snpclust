@@ -1,4 +1,3 @@
-
 ###############################################################################
 #' ggplot_selection
 #'
@@ -7,7 +6,7 @@
 #'
 #' @param peaks    List returned by peak_selection
 #' @param pca      PCA data frame, requires variable contributions
-#                  with columns PCA_VARNAME and axes
+#                  with columns DIMRED_VARNAME and axes
 #' @param axes     Axes to plot
 #' @param ncol     ggplot2::facet_wrap
 #' @param scales   ggplot2::facet_wrap
@@ -19,8 +18,7 @@
 ggplot_selection <- function(peaks, pca, axes = paste0('PC', 1:10),
   ncol = 5, scales = 'free_y', ..., n_points = 2e3) {
 
-  PCA_VARTYPE <- NULL
-  df_vars <- abs(subset(pca, PCA_VARTYPE == 'VAR')[axes])
+  df_vars <- abs(subset(pca, DIMRED_VARTYPE == 'VAR')[axes])
   peaks <- peaks[names(peaks) %in% axes]
   peaks_vars <- lapply(seq_along(peaks), function(idx) {
       axe <- names(peaks)[idx]
@@ -61,7 +59,7 @@ ggplot_selection <- function(peaks, pca, axes = paste0('PC', 1:10),
 #' Displays Manhattan-like plot for SNPs contributions to Principal Components 
 #'
 #' @param gdata      GenotypeData object with snpIDs matching df_vars column
-#'                   PCA_VARNAME
+#'                   DIMRED_VARNAME
 #' @param byposition Plot the SNPs by chromosome and poistion or by index
 #' @inheritParams ggplot_selection
 #' @return ggplot
@@ -69,9 +67,8 @@ ggplot_selection <- function(peaks, pca, axes = paste0('PC', 1:10),
 ggplot_manhat <- function(pca, gdata, axes = paste0('PC', 1:10),
   byposition = TRUE, n_points = 2e3, ncol = 5, ...) {
 
-  PCA_VARTYPE <- NULL
-  df_vars <- subset(pca, PCA_VARTYPE == 'VAR')
-  ids <- as.numeric(gsub('VAR_', '', df_vars$PCA_VARNAME))
+  df_vars <- subset(pca, DIMRED_VARTYPE == 'VAR')
+  ids <- as.numeric(gsub('VAR_', '', df_vars$DIMRED_VARNAME))
   snpvars <- c('chromosome', 'position', 'probe_id')
   df_snps <- gdata@snpAnnot@data
   df_snps <- df_snps[match(ids, df_snps$snpID), snpvars]
@@ -118,7 +115,7 @@ ggplot_manhat <- function(pca, gdata, axes = paste0('PC', 1:10),
 #' Ggplot a qb_pca object
 #'
 #' @param pca  pca or qb_pca object (which is fortified)
-#' @param groups      Column index or name of qb_pca$data for the grouping of
+#' @param group      Column index or name of qb_pca$data for the grouping of
 #'                    observations.
 #'                      Default: NULL
 #' @param axes        Two principal component axes to plot.
@@ -148,7 +145,6 @@ ggplot_manhat <- function(pca, gdata, axes = paste0('PC', 1:10),
 #' @param alpha_fill Logical, should also use alpha to discriminate active and
 #'                    additional observations ?
 #'                      Default: FALSE
-#' @param white_panel Logical, changes standard panel theme
 #' @param nas_first   Logical, rearranges data frame to put NAs in groups first
 #' @param ... Passed to draw_pca_vars
 #' @return            ggplot object
@@ -156,7 +152,7 @@ ggplot_manhat <- function(pca, gdata, axes = paste0('PC', 1:10),
 #' @author tcharlon
 #' @export
 ggplot_pca    <- function(pca,
-  groups        = NULL,
+  group        = NULL,
   axes          = c(1,2),
   obs           = TRUE,
   obs_sup				= FALSE,
@@ -168,21 +164,16 @@ ggplot_pca    <- function(pca,
   link 					= FALSE,
   alpha_fill    = FALSE,
   ellipses_ci   = .95,
-  white_panel   = TRUE,
   nas_first     = TRUE,
   ...) {
 
   check_fx_args(
-    groups = 'C1',
+    group = 'C1',
     axes = '!N2',
     ellipses_ci = '!N1',
     ellipses = '!B1',
     label = "C1",
-    alpha_fill = '!B1',
-    white_panel = '!B1')
-
-  # init those 2 variables to avoid 'NOTE' in the R CMD CHECK
-  PCA_VARNAME <- NULL
+    alpha_fill = '!B1')
 
   # dispatch on qb_pca and pca
   if (methods::is(pca, 'qb_pca')) {
@@ -210,28 +201,26 @@ ggplot_pca    <- function(pca,
 
   # Display observations
   # check availability of all obs
-all_obs <- c(
-  check_availability(obs,
-    pca[pca$PCA_VARTYPE == "OBS", 'PCA_VARNAME'],
-    'active observations'),
-  check_availability(obs_sup,
-    pca[pca$PCA_VARTYPE == "OBS_SUP", 'PCA_VARNAME'],
-    'suppl. observations'))
+  all_obs <- c(
+    check_availability(obs,
+      pca[pca$DIMRED_VARTYPE == "OBS", 'DIMRED_VARNAME'],
+      'active observations'),
+    check_availability(obs_sup,
+      pca[pca$DIMRED_VARTYPE == "OBS_SUP", 'DIMRED_VARNAME'],
+      'suppl. observations'))
 
   if (length(all_obs)) {
-    df_all_obs <- dplyr::filter(pca, PCA_VARNAME %in% all_obs)
-    aes_param <- list(group = groups, color = groups, shape = 'PCA_VARTYPE')
+    df_all_obs <- dplyr::filter(pca, DIMRED_VARNAME %in% all_obs)
+    aes_param <- list(group = group, color = group, shape = 'DIMRED_VARTYPE')
     if (alpha_fill) {
-      aes_param$alpha <- 'PCA_VARTYPE'
+      aes_param$alpha <- 'DIMRED_VARTYPE'
       plt <- plt + scale_alpha_manual(name = 'Observation',
         labels = c(OBS = 'Active', OBS_SUP = 'Suppl.'), values = c(1, 0.5))
     }
-    df_all_obs <- reorder_pca(df_all_obs = df_all_obs, groups = groups,
-      nas_first = nas_first)
+    df_all_obs %<>% reorder_pca(nas_first, group)
     plt <- plt + geom_point(do.call('aes_string', aes_param), df_all_obs) +
       scale_shape_discrete(name = 'Observation',
         labels = c(OBS = 'Active', OBS_SUP = 'Suppl.'))
-
 
     # Add ID labels if requested
     if(!is.null(label)) {
@@ -242,43 +231,39 @@ all_obs <- c(
       plt <- plt +
         geom_text(do.call('aes_string',
             c(aes_param, label = label)), df_all_obs)
-
     }
-
 
     #do not show guide if only active observations
     if (methods::is(obs_sup, 'logical') && !obs_sup) {
       plt <- plt + guides(alpha = FALSE, shape = FALSE)
     }
 
-    if (!is.null(groups) && !is.numeric(df_all_obs[, groups])) {
-      df_all_obs <- df_all_obs[!is.na(df_all_obs[[groups]]), ]
+    if (!is.null(group) && !is.numeric(df_all_obs[, group])) {
+      df_all_obs <- df_all_obs[!is.na(df_all_obs[[group]]), ]
       if (ellipses) {
         plt <- plt + do.call(ggplot2::stat_ellipse,
-            list(mapping = aes_string(fill = groups, color = groups),
+            list(mapping = aes_string(color = group),
               data = df_all_obs))
       }
       if (link) {
         plt <- plt + geom_line(data = df_all_obs,
-          aes_string(group = groups, color = groups)
+          aes_string(group = group, color = group)
         )
       }
     }
-
-
   }
   # check availability of all vars
-all_vars <- c(
-  check_availability(vars,
-    pca[pca$PCA_VARTYPE == "VAR", 'PCA_VARNAME'],
-    'active variables'),
-  check_availability(vars_sup,
-    pca[pca$PCA_VARTYPE == "VAR_SUP", 'PCA_VARNAME'],
-    'suppl. variables'))
+  all_vars <- c(
+    check_availability(vars,
+      pca[pca$DIMRED_VARTYPE == "VAR", 'DIMRED_VARNAME'],
+      'active variables'),
+    check_availability(vars_sup,
+      pca[pca$DIMRED_VARTYPE == "VAR_SUP", 'DIMRED_VARNAME'],
+      'suppl. variables'))
 
   # Add variables if requested
   if (length(all_vars)) {
-    df_all_vars <- pca[match(c('Explained_variance', all_vars), pca$PCA_VARNAME), ]
+    df_all_vars <- pca[match(c('Explained_variance', all_vars), pca$DIMRED_VARNAME), ]
     # get scale for active vars
     if(obs || obs_sup) {
        circle_sf <-  max(abs(df_all_obs[, names_axe]))
@@ -290,139 +275,7 @@ all_vars <- c(
     plt <- plt + var_layer
   }
 
-
-  if (white_panel) {
-    plt <- plt + theme(panel.background = element_blank(),
-      panel.grid.major = element_line(colour = "grey", size = 0.3),
-      panel.grid.minor = element_line(colour = "grey", size = 0.2, linetype = 2))
-  }
-
   plt + theme_bw()
-}
-
-#' Get PCA pairs panels
-#'
-#' Get the pair combinations panels of Principal Components.
-#'
-#' @inheritParams ggplot_pca
-#' @param seq_axes     Sequence of axes to display
-#' @param max_vars Number of variables to display
-#' @param ... Passed to ggplot_pca
-#' @return NULL
-#' @export
-get_pca_panels <- function(pca, seq_axes = 1:4, groups = NULL, max_vars = 0L,
-  ...) {
-
-  check_fx_args(seq_axes = '!I+', max_vars = '!I1')
-
-  stopifnot(length(seq_axes) > 2)
-
-  # dispatch on qb_pca and pca
-  if (inherits(pca, 'qb_pca')) {
-    pca <- pca_fortify(pca)
-  } else if (!inherits(pca, 'pca')) {
-    stop('pca must be either a qb_pca or a pca object')
-  }
-
-  # Get PC plots
-  df_axes <- utils::combn(seq_axes, 2)
-  vars_idxs <- which(pca$PCA_VARTYPE == 'VAR')
-  seq_vars <- seq_len(min(max_vars, length(vars_idxs)))
-  plots <- apply(df_axes, 2, .get_pca_panels, pca, vars_idxs, seq_vars, groups,
-    ...)
-
-  # Set title and legend
-  n_obs <- sum(pca$PCA_VARTYPE == 'OBS')
-  n_vars <- sum(pca$PCA_VARTYPE == 'VAR')
-  plots[[1]] <- plots[[1]] +
-    theme(legend.position = 'top') +
-    guides(col = guide_legend(nrow = 2))
-
-  groups <- if (!is.null(groups)) paste0('Groups: ', groups, ', ')
-  title_text <- paste0(groups, 'Obs.: ', n_obs, ', Var.: ', n_vars)
-  plots[[1]] <- plots[[1]] + labs(title = title_text)
-
-  # remove other legends
-  plots[-1] <- lapply(plots[-1], '+',
-    theme(plot.title = element_blank(), legend.position = 'none'))
-
-  # Put in upper right triangle
-  axes_len <- length(seq_axes) - 1
-  position_matrix <- matrix(1:(axes_len ^ 2), axes_len)
-  triangle_panel <- t(upper.tri(position_matrix, TRUE))
-  up_triangle <- which(triangle_panel)
-  plots[up_triangle] <- plots
-  low_triangle <- !triangle_panel
-  plots[which(low_triangle)] <- vector('list', sum(low_triangle))
-
-  plots[t(position_matrix)]
-}
-
-.get_pca_panels <- function(axes, pca, vars_idxs, seq_vars, groups, ...) {
-  axes <- as.vector(axes)
-  pcs <- paste0('PC', axes)
-  df_vars <- abs(pca[vars_idxs, pcs])
-  ord_vars_idxs <- apply(df_vars, 2, order, decreasing = TRUE)[seq_vars, ]
-  signif_vars_idxs <- vars_idxs[ord_vars_idxs]
-  vars_idxs <- setdiff(vars_idxs, signif_vars_idxs)
-  if (length(vars_idxs)) pca <- pca[-vars_idxs, ]
-  ggplot_pca(pca, groups, axes, white_panel = FALSE,
-      vars = TRUE, scale_sdev = TRUE, ...) +
-    labs(x = pcs[1], y = pcs[2]) +
-    theme(axis.ticks = element_blank(), axis.text = element_blank())
-}
-
-
-grob_pca_panels <- function(plots, only_panels = TRUE, legend = FALSE) {
-  stopifnot(inherits(plots, 'list'))
-
-  theme_param <- sapply(1:3, function(i) element_blank())
-  names(theme_param) <- c(paste0('axis.', c('text', 'ticks', 'title')))
-  if (!legend) theme_param$legend.position <- 'none'
-  theme_grob_pca <- do.call('theme', theme_param)
-  main_plot <- ggplotGrob(plots[[1]] + theme_grob_pca)
-  main_plot <- gtable::gtable_filter(main_plot, 'background|title|guide-box')
-
-  grobs <- NULL
-  nulls <- sapply(plots, is.null)
-  grobs[nulls] <- lapply(1:sum(nulls), grid::nullGrob)
-  sqr_mat_theme <- theme(plot.title = element_blank(), legend.position = 'none',
-    panel.grid = element_blank())
-  plots[!nulls] <- lapply(plots[!nulls], '+', sqr_mat_theme)
-  grobs[!nulls] <- lapply(plots[!nulls], ggplotGrob)
-  not_nulls <- which(!nulls)
-
-  # Build grob and put plots
-  grid_length <- sqrt(length(grobs))
-  unit_mat <- grid::unit(rep(1, grid_length - 1), 'null')
-  main_plot <- gtable::gtable_add_rows(main_plot, unit_mat, 3)
-  main_plot <- gtable::gtable_add_cols(main_plot, unit_mat, 4)
-  main_plot$layout$r[2:(2 + legend)] <- 3 + grid_length
-  for (plot_idx in not_nulls) {
-    if (only_panels) {
-      grobs[[plot_idx]] <- gtable::gtable_filter(grobs[[plot_idx]], 'panel|lab|background')
-    }
-    main_plot <- gtable::gtable_add_grob(main_plot, grobs[[plot_idx]],
-      3 + legend + (plot_idx - 1) %% grid_length,
-      4 + (plot_idx - 1) %/% grid_length)
-  }
-
-  main_plot
-}
-
-#' Plot PCA pairs
-#'
-#' Plots the pair combinations of Principal Components.
-#'
-#' @inheritParams get_pca_panels
-#' @inheritParams ggplot_pca
-#' @param ... Passed to get_pca_panels
-#' @return NULL
-#' @export
-plot_pca_pairs <- function(seq_axes, ..., max_vars = 0L, ellipses = TRUE) {
-  ggplts <- get_pca_panels(seq_axes = seq_axes, ..., max_vars = max_vars,
-    ellipses = ellipses)
-  graphics::plot(grob_pca_panels(ggplts))
 }
 
 reorder_pca <- function(df_all_obs, nas_first, groups) {
@@ -438,10 +291,7 @@ reorder_pca <- function(df_all_obs, nas_first, groups) {
 create_pca_axis_labels <- function(pca, pc_variance = TRUE, axes,
   names_axe = paste0("PC", axes)) {
 
-  #fix note during checks
-  PCA_VARNAME <- NULL
-
-  exp_var   <- dplyr::filter(pca, PCA_VARNAME == 'Explained_variance')
+  exp_var   <- dplyr::filter(pca, DIMRED_VARNAME == 'Explained_variance')
   axis_labs <- if (pc_variance && nrow(exp_var)) {
       paste0(names_axe, ' (', round(exp_var[axes] * 100, 1), '% explained variance)')
     } else {
@@ -462,7 +312,7 @@ draw_pca_vars <- function(data_vars, names_axe, scale = 1, circle = FALSE,
 
   data_vars <- scale_pca_vars(df_all_vars = data_vars, names_axe = names_axe,
     scale = scale, scale_sdev = scale_sdev)
-  colors_vars <- as.numeric(factor(data_vars$PCA_VARTYPE))
+  colors_vars <- as.numeric(factor(data_vars$DIMRED_VARTYPE))
 
   list_geoms <- list(
     geom_segment(aes_string(x = 0, y = 0,
@@ -474,7 +324,7 @@ draw_pca_vars <- function(data_vars, names_axe, scale = 1, circle = FALSE,
       lty = 'dashed'
     ),
     geom_text(aes_string(x = names_axe[1], y = names_axe[2],
-        label = 'PCA_VARNAME'), data_vars)
+        label = 'DIMRED_VARNAME'), data_vars)
   )
 
   if (circle) list_geoms[[3]] <- draw_corr_circle(scale)
@@ -493,15 +343,12 @@ draw_corr_circle <- function(scale) {
 
 scale_pca_vars <- function(df_all_vars, names_axe, scale_sdev = FALSE, scale = 1) {
 
-  #fix note during checks
-  PCA_VARTYPE <- NULL
-
-  vars <- grepl('^VAR', df_all_vars$PCA_VARTYPE)
+  vars <- grepl('^VAR', df_all_vars$DIMRED_VARTYPE)
 
   if (scale_sdev) {
-    variance_idx <- match('Explained_variance', df_all_vars$PCA_VARNAME)
+    variance_idx <- match('Explained_variance', df_all_vars$DIMRED_VARNAME)
     die_if(is.na(variance_idx),
-      'scale_sdev is TRUE but no row with PCA_VARTYPE == Explained_variance')
+      'scale_sdev is TRUE but no row with DIMRED_VARTYPE == Explained_variance')
     variance_scale <- unlist(sqrt(df_all_vars[variance_idx, names_axe]))
     df_all_vars[vars, names_axe] <- t(t(df_all_vars[vars, names_axe]) * variance_scale)
   }
@@ -511,8 +358,8 @@ scale_pca_vars <- function(df_all_vars, names_axe, scale_sdev = FALSE, scale = 1
   df_all_vars[vars, names_axe] <- df_all_vars[vars, names_axe] * scale
 
   df_all_vars  <- dplyr::select_(df_all_vars,
-    .dots = c("PCA_VARNAME", "PCA_VARTYPE", names_axe)) %>%
-    dplyr::filter(PCA_VARTYPE != 'OTHER')
+    .dots = c("DIMRED_VARNAME", "DIMRED_VARTYPE", names_axe)) %>%
+    dplyr::filter(DIMRED_VARTYPE != 'OTHER')
 
   df_all_vars
 }

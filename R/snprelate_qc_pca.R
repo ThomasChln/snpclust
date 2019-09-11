@@ -15,13 +15,14 @@ snprelate_qc <- function(gdata, sample_nas = .03, snp_nas = .01, maf = .05,
   gds <- request_snpgds_file(gdata)$snpgds
 
   # samples NAs
-  sample_nas_rates <- SNPRelate::snpgdsSampMissRate(gds, l_ids[[1]], l_ids[[2]])
+  sample_nas_rates <- suppressMessages(SNPRelate::snpgdsSampMissRate(gds,
+      l_ids[[1]], l_ids[[2]]))
   l_ids[[1]] <- l_ids[[1]][sample_nas_rates <= sample_nas]
   df_qc <- .rbind_qc(df_qc, 'Samples NAs', sample_nas, l_ids)
 
   # samples IBS
-  m_ibs <- SNPRelate::snpgdsIBS(gds, l_ids[[1]], l_ids[[2]], num.thread = n_cores,
-    verbose = FALSE)$ibs
+  m_ibs <- suppressMessages(SNPRelate::snpgdsIBS(gds, l_ids[[1]], l_ids[[2]],
+      num.thread = n_cores, verbose = FALSE))$ibs
   m_ibs[lower.tri(m_ibs, TRUE)] <- NA
   max_ibs <- apply(m_ibs[, -1], 2, max, na.rm = TRUE)
   scan_ids_ibs <- l_ids[[1]][c(TRUE, max_ibs < ibs)]
@@ -36,17 +37,18 @@ snprelate_qc <- function(gdata, sample_nas = .03, snp_nas = .01, maf = .05,
   df_qc <- .rbind_qc(df_qc, 'Identity by state - Twins', ibs, l_ids)
 
   # MAF
-  l_ids[[2]] <- unlist(SNPRelate::snpgdsSelectSNP(gds, l_ids[[1]], l_ids[[2]],
-      missing.rate = snp_nas, verbose = FALSE))
+  l_ids[[2]] <- unlist(suppressMessages(SNPRelate::snpgdsSelectSNP(gds,
+        l_ids[[1]], l_ids[[2]], missing.rate = snp_nas, verbose = FALSE)))
   df_qc <- .rbind_qc(df_qc, 'SNPs NAs', snp_nas, l_ids)
-  l_ids[[2]] <- unlist(SNPRelate::snpgdsSelectSNP(gds, l_ids[[1]], l_ids[[2]],
-      maf = maf, verbose = FALSE))
+  l_ids[[2]] <- unlist(suppressMessages(SNPRelate::snpgdsSelectSNP(gds,
+        l_ids[[1]], l_ids[[2]], maf = maf, verbose = FALSE)))
   df_qc <- .rbind_qc(df_qc, 'MAF', maf, l_ids)
 
   # TagSNP
   if (!is.na(tsnp)) {
-    l_ids[[2]] <- unlist(SNPRelate::snpgdsLDpruning(gds, l_ids[[1]], l_ids[[2]],
-        ld.threshold = sqrt(tsnp), method = 'r', verbose = FALSE))
+    l_ids[[2]] <- unlist(suppressMessages(SNPRelate::snpgdsLDpruning(gds,
+          l_ids[[1]], l_ids[[2]], ld.threshold = sqrt(tsnp), method = 'r',
+          verbose = FALSE)))
     df_qc <- .rbind_qc(df_qc, 'TagSNP', tsnp, l_ids)
   }
   l_ids <- lapply(1:2, function(i) match(l_ids[[i]], l_ids_original[[i]]))
@@ -63,8 +65,8 @@ snprelate_pca <- function(gdata, n_axes = 32, n_cores = 2) {
   l_ids <- lapply(paste0('get', c('Scan', 'Snp'), 'ID'), do.call, list(gdata),
     envir = getNamespace('GWASTools'))
   n_axes <- min(c(nscan(gdata), nsnp(gdata)) - 1, n_axes)
-  pca <- SNPRelate::snpgdsPCA(gds, l_ids[[1]], l_ids[[2]], num.thread = n_cores,
-    eigen.cnt = n_axes, verbose = FALSE)
+  pca <- suppressMessages(SNPRelate::snpgdsPCA(gds, l_ids[[1]], l_ids[[2]],
+    num.thread = n_cores, eigen.cnt = n_axes, verbose = FALSE))
   if (n_axes == 0) n_axes <- ncol(pca$eigenvect)
   seq_axes <- seq_len(n_axes)
   name_axes <- paste0('PC', seq_axes)
@@ -73,28 +75,28 @@ snprelate_pca <- function(gdata, n_axes = 32, n_cores = 2) {
   var <- pca$eigenval[seq_axes] / sum(pca$eigenval, na.rm = TRUE)
   var_percent <- round(var * 100)
   df_variance <- data.frame(matrix(c(var, var_percent), 2, byrow = TRUE),
-    PCA_VARNAME = c('Explained_variance', 'Explained_variance_percent'),
-    PCA_VARTYPE = 'OTHER')
+    DIMRED_VARNAME = c('Explained_variance', 'Explained_variance_percent'),
+    DIMRED_VARTYPE = 'OTHER')
   names(df_variance)[seq_axes] <- name_axes
 
   # get obs
   mat_obs <- pca$eigenvect * sqrt(length(l_ids[[1]]))
-  df_obs <- data.frame(mat_obs, PCA_VARTYPE = 'OBS',
-    PCA_VARNAME = paste0('OBS_', l_ids[[1]]), stringsAsFactors = FALSE)
+  df_obs <- data.frame(mat_obs, DIMRED_VARTYPE = 'OBS',
+    DIMRED_VARNAME = paste0('OBS_', l_ids[[1]]), stringsAsFactors = FALSE)
   names(df_obs)[seq_axes] <- name_axes
 
   # get vars
-  df_vars <- data.frame(PCA_VARNAME = paste0('VAR_', l_ids[[2]]),
-    PCA_VARTYPE = 'VAR', stringsAsFactors = FALSE)
-  m_vars <- SNPRelate::snpgdsPCASNPLoading(pca, gds, n_cores, FALSE)
+  df_vars <- data.frame(DIMRED_VARNAME = paste0('VAR_', l_ids[[2]]),
+    DIMRED_VARTYPE = 'VAR', stringsAsFactors = FALSE)
+  m_vars <- suppressMessages(SNPRelate::snpgdsPCASNPLoading(pca, gds, n_cores,
+      FALSE))
   df_vars <- cbind(t(m_vars$snploading), df_vars)
   names(df_vars)[seq_axes] <- name_axes
 
   df_pca <- df_rbind_all(df_variance, df_obs, df_vars)
 
   # add obs annotations from gdata
-  obs_idxs <- df_pca$PCA_VARTYPE == 'OBS'
-  scanID <- NULL
+  obs_idxs <- df_pca$DIMRED_VARTYPE == 'OBS'
   df_annot <- subset(gdata@scanAnnot@data, scanID %in% l_ids[[1]]) 
   for (colname in names(gdata@scanAnnot@data)) {
     df_pca[[colname]] <- NA
@@ -133,7 +135,7 @@ merge_dfs <- function(l_df, ...) {
 
 
 df_rbind_all <- function(...,  use_row_names = FALSE) {
-  df <- as.data.frame(dplyr::bind_rows(...))
+  df <- as.data.frame(suppressWarnings(dplyr::bind_rows(...)))
   if (use_row_names) {
     dots <- list(...)
     dfs <-  if (is.list(dots[[1]]) && !is.data.frame(dots[[1]]))

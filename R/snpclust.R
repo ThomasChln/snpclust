@@ -17,6 +17,7 @@
 #' @param n_axes      Number of principal components to consider
 #' @param n_cores     Number of cores to use
 #' @param only_pca    Logical, compute only PCA and exit
+#' @param keep_tmp    Logical, keep temporary objects
 #' @param ...         Passed to snprelate_qc 
 #' @return List of slots: 
 #'           pca - PCA applied to the quality controlled dataset,
@@ -31,7 +32,7 @@
 #' @author tcharlon
 #' @export
 snpclust <- function(paths, gds, subsets = '', n_axes = 1e2,
-  n_cores = 1, only_pca = FALSE, ...) {
+  n_cores = 1, only_pca = FALSE, keep_tmp = FALSE, ...) {
 
   if (missing(paths)) {
     paths <- gds_to_bed(normalizePath(gds))
@@ -41,14 +42,16 @@ snpclust <- function(paths, gds, subsets = '', n_axes = 1e2,
   # subset gdata, qc and pca
   gdata <- load_gds_as_genotype_data(gds)
   on.exit(close(gdata))
+  if (!keep_tmp) setup_temp_dir()
+
   pca_objs <- lapply(subsets, .snpclust_qc_pca, gdata, n_axes, n_cores, ...)
   snpclust_obj <- list(pca = lapply(pca_objs, '[[', 'pca'),
     qc = lapply(pca_objs, '[[', 'qc'), gdata = lapply(pca_objs, '[[', 'gdata'))
 
   if (!only_pca) {
-    # haplotypes estimation, merging, and weighting by PC rank and contributions 
-    haplos <- lapply(snpclust_obj$pca, .snpclust_features, gdata, paths, 0,
-      n_cores)
+    # haplotypes estimation, merging and weighting by PC rank & contributions
+    haplos <- lapply(snpclust_obj$pca, .snpclust_features, gdata, paths,
+      n_axes, n_cores)
     snpclust_obj$peaks <- lapply(haplos, attr, 'peaks')
     snpclust_obj$max_contributor <- lapply(haplos, attr, 'max_contributor')
     snpclust_obj$features <- lapply(haplos, .haplo_features, n_cores)
@@ -131,23 +134,21 @@ transitive_tagsnp <- function(m_data, r2 = .8) {
 }
 
 .snpclust_features <- function(df_pca, gdata, paths, n_pcs, n_cores) {
-  PCA_VARTYPE <- NULL
-  df_vars <- subset(df_pca, PCA_VARTYPE == 'VAR')
-  snp_ids <- gsub('VAR_', '', df_vars$PCA_VARNAME)
+  df_vars <- subset(df_pca, DIMRED_VARTYPE == 'VAR')
+  snp_ids <- gsub('VAR_', '', df_vars$DIMRED_VARNAME)
   df_snp <- getSnpVariable(gdata, c('chromosome', 'position', 'probe_id'),
     snp_ids)
   df_snp$probe_id <- as.character(df_snp$probe_id)
 
   # get peaks
-  if (!n_pcs) n_pcs <- length(grep('PC[0-9]', colnames(df_vars)))
   df_abs_vars <- abs(df_vars[paste0('PC', seq_len(n_pcs))])
   l_peaks <- peak_selection(df_abs_vars, df_snp$chromosome, n_cores)
   l_peaks_copy <- l_peaks
   l_peaks <- unlist(lapply(l_peaks, .separate_peaks, df_snp), FALSE)
 
   # impute bed, then estimate haplotypes and get SNPs
-  df_obs <- subset(df_pca, PCA_VARTYPE == 'OBS')
-  scan_ids <- as.numeric(gsub('OBS_', '', df_obs$PCA_VARNAME))
+  df_obs <- subset(df_pca, DIMRED_VARTYPE == 'OBS')
+  scan_ids <- as.numeric(gsub('OBS_', '', df_obs$DIMRED_VARNAME))
   tmpfile = tempfile()
   impute_bed(paths, df_snp, l_peaks,
      match(scan_ids, GWASTools::getScanID(gdata)), tmpfile)
@@ -173,8 +174,7 @@ transitive_tagsnp <- function(m_data, r2 = .8) {
   pcs <- sapply(strsplit(names(feats), '[.]'), '[', 1)
   pcs_n <- as.numeric(sapply(strsplit(pcs, 'PC'), '[', 2))
   contribs <- attr(feats, 'contribs')
-  PCA_VARTYPE <- NULL
-  obs_names <- gsub('OBS_', '', subset(pca, PCA_VARTYPE == 'OBS')$PCA_VARNAME)
+  obs_names <- gsub('OBS_', '', subset(pca, DIMRED_VARTYPE == 'OBS')$DIMRED_VARNAME)
   m_data <- matrix(unlist(feats), length(obs_names),
     dimnames = list(obs_names, names(feats)))
   attributes(m_data) <- c(attributes(m_data), attributes(feats)) 
@@ -188,7 +188,7 @@ transitive_tagsnp <- function(m_data, r2 = .8) {
 
 .add_SNPs <- function(l_haplo, df_vars, gdata, scan_ids) {
   snps_idxs <- sapply(l_haplo, length) == 1
-  snps_ids <- gsub('VAR_', '', df_vars$PCA_VARNAME[unlist(l_haplo[snps_idxs])])
+  snps_ids <- gsub('VAR_', '', df_vars$DIMRED_VARNAME[unlist(l_haplo[snps_idxs])])
   m_geno <- t(fetch_genotypes(gdata))
   m_geno <- m_geno[, match(snps_ids, getSnpID(gdata))]
   m_geno <- m_geno[match(scan_ids, getScanID(gdata)), ]

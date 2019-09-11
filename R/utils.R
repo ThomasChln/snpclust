@@ -1,3 +1,9 @@
+
+if (getRversion() >= "2.15.1") {
+  c('.', 'DIMRED_VARNAME', 'DIMRED_VARTYPE', 'scanID') %>%
+    utils::globalVariables()
+}
+
 .import_gds <- function(geno, snps) {
   l_geno <- strsplit(geno, '\t')
 
@@ -51,7 +57,7 @@
 
 import_gds <- function(dirpath, gdsname) {
   path <- grep('bed', list.files(dirpath, full.names = TRUE), value = TRUE)
-  system(paste('plink --bfile', gsub('.bed$', '', path),
+  system(paste('plink --noweb --bfile', gsub('.bed$', '', path),
       '--recode --tab --out pedfile'))
   on.exit(file.remove(paste0('pedfile.', c('ped', 'map', 'log'))))
   geno <- readLines('pedfile.ped')
@@ -65,12 +71,10 @@ import_gds <- function(dirpath, gdsname) {
   save_genotype_data_as_gds(gdata, gdsname)
 }
 
-impute_bed <- function(l_paths, df_snp, l_peaks, scan_ids, out,
+impute_bed <- function(paths, df_snp, l_peaks, scan_ids, out,
   impute = sample_impute) {
-  if (length(l_paths) > 1) plink_merge(l_paths, '.', out) else {
-    l_paths[[1]] %>% file.rename(
-      paste0(out, gsub('.*([.][a-z]+)$', '\\1', .)))
-  }
+  paths %>% paste0('.', c('bed', 'bim', 'fam')) %>%
+    sapply(function(path) system(paste('mv', path, paste0(out, gsub('.*([.][a-z]+)$', '\\1', path)))))
   df_snp$probe_id[sort(unique(unlist(l_peaks)))] %>%
     plink_extract(out, ., scan_ids) %>% snprelate_impute(out, impute)
 }
@@ -90,7 +94,7 @@ plink_extract <- function(path, probe_ids, scan_ids) {
   df_scans <- utils::read.table(paste0(path, '.fam'))[as.numeric(scan_ids), ]
   utils::write.table(df_scans, 'scans', sep = ' ',
     quote = FALSE, row.names = FALSE, col.names = FALSE)
-  .system2('plink', paste('--bfile', path, '--snps', paste(probe_ids, collapse = ','),
+  .system2('plink', paste('--noweb --bfile', path, '--snps', paste(probe_ids, collapse = ','),
       '--keep scans --make-bed --out'))
   as.list(paste0('output_plink.', c('bed', 'fam', 'bim')))
 }
