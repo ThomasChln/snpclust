@@ -1,9 +1,7 @@
 # SNPClust
 
-<!--
-[![Build Status](https://travis-ci.org/yihui/knitr.svg)](https://travis-ci.org/yihui/knitr)
-[![Coverage Status](https://coveralls.io/repos/yihui/knitr/badge.svg?branch=master&service=github)](https://coveralls.io/github/yihui/knitr?branch=master)
-[![Downloads from the RStudio CRAN mirror](http://cranlogs.r-pkg.org/badges/knitr)](http://cran.rstudio.com/package=knitr)
+[![Build Status](https://travis-ci.org/thomaschln/snpclust.svg)](https://travis-ci.org/thomaschln/snpclust)
+[![Coverage status](https://codecov.io/gh/thomaschln/snpclust/branch/master/graph/badge.svg)](https://codecov.io/github/thomaschln/snpclust)
 -->
 
 The R package **snpclust** performs unsupervised feature selection and summarization based on Principal Component Analysis, Gaussian Mixture Models, and Markov Chain Monte Carlo.
