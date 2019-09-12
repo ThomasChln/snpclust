@@ -1,7 +1,8 @@
 context('snpclust')
+snpclust:::setup_temp_dir()
 
 library(GWASTools)
-gds <- snpclust:::save_hgdp_as_gds()
+gds <- snpclust:::save_hgdp_as_gds(check = TRUE)
 bed <- snpclust:::gds_to_bed(gds)
 
 ids <- 1:10

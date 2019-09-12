@@ -186,17 +186,16 @@ plink_merge_beds <- function(l_paths, dir, outpath) {
   outpath <- file.path(dir, outpath)
   cmd_merge <- paste('--noweb --bfile', path,
     '--extract common_snps --merge-list file_list --make-bed --allow-no-sex',
-    '--filter-cases --out', outpath, '> /dev/null')
+    '--missing-phenotype --out', outpath, '> /dev/null')
   system2('plink', cmd_merge)
   c(path, cmd_merge)
 }
 
 plink_merge <- function(l_paths, dir, outpath) {
-  if (system('plink', ignore.stdout = TRUE) == 127) stop('plink not found')
   write_common_snps(l_paths)
   lapply(l_paths, write_scan_dataset_id)
   plink_merge_beds(l_paths, dir, outpath) %>%
-    plink_allele_flip(outpath, .[1], .[2])
+    { plink_allele_flip(outpath, .[1], .[2]) }
   paste0(outpath, '.', c('bed', 'bim', 'fam'))
 }
 

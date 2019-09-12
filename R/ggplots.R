@@ -357,8 +357,8 @@ scale_pca_vars <- function(df_all_vars, names_axe, scale_sdev = FALSE, scale = 1
   scale <- .7 * scale / max_var
   df_all_vars[vars, names_axe] <- df_all_vars[vars, names_axe] * scale
 
-  df_all_vars  <- dplyr::select_(df_all_vars,
-    .dots = c("DIMRED_VARNAME", "DIMRED_VARTYPE", names_axe)) %>%
+  df_all_vars  <- dplyr::select(df_all_vars,
+    c("DIMRED_VARNAME", "DIMRED_VARTYPE", names_axe)) %>%
     dplyr::filter(DIMRED_VARTYPE != 'OTHER')
 
   df_all_vars

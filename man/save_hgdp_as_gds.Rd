@@ -5,14 +5,18 @@
 \title{save_hgdp_as_gds}
 \usage{
 save_hgdp_as_gds(paths = file.path(system.file("extdata", package =
-  "snpclust"), paste0("hgdp.", c("zip", "txt", "gds"))),
+  "snpclust"), paste0("hgdp.", c("zip", "txt"))), outpath = "hgdp.gds",
   zippaths = paste0("hgdp/", c("HGDP_FinalReport_Forward.txt",
-  "HGDP_Map.txt")))
+  "HGDP_Map.txt")), ...)
 }
 \arguments{
 \item{paths}{Paths of the zip, txt, and gds files}
 
+\item{outpath}{Output GDS file path}
+
 \item{zippaths}{Paths of the genotype and snp files in the zip}
+
+\item{...}{Passed to save_genotype_data_as_gds}
 }
 \value{
 Path of the saved gds file

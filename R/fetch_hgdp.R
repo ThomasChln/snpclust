@@ -1,4 +1,26 @@
 
+#' save_hgdp_as_gds
+#' @param paths    Paths of the zip, txt, and gds files
+#' @param outpath  Output GDS file path
+#' @param zippaths Paths of the genotype and snp files in the zip
+#' @param ...      Passed to save_genotype_data_as_gds
+#' @return Path of the saved gds file
+#' @export
+save_hgdp_as_gds <- function(
+  paths = file.path(system.file('extdata', package = 'snpclust'),
+    paste0('hgdp.', c('zip', 'txt'))),
+  outpath = 'hgdp.gds',
+  zippaths = paste0('hgdp/', c('HGDP_FinalReport_Forward.txt', 'HGDP_Map.txt')),
+  ...) {
+  txts_paths <- utils::unzip(paths[1], zippaths, junkpaths = TRUE)
+  actg_gdata <- actg_tsv_to_gdata(txts_paths[1], paths[2],
+    c('scan_id', 'gender', 'population', 'geographic_origin', 'region'),
+    txts_paths[2])
+  file.remove(txts_paths)
+  save_genotype_data_as_gds(actg_gdata, outpath, quiet = TRUE, ...)
+  outpath
+}
+
 
 fetch_hgdp <- function(paths) {
   urls <- c('http://www.hagsc.org/hgdp/data/hgdp.zip', 
@@ -45,24 +67,4 @@ reduce_hgdp <- function(paths,
   dir.create('hgdp')
   for (i in 1:2) file.rename(txts_paths[i], zippaths[i]) 
   utils::zip(paths[1], zippaths)
-}
-
-#' save_hgdp_as_gds
-#' @param paths    Paths of the zip, txt, and gds files
-#' @param zippaths Paths of the genotype and snp files in the zip
-#' @return Path of the saved gds file
-#' @export
-save_hgdp_as_gds <- function(
-  paths = file.path(system.file('extdata', package = 'snpclust'),
-    paste0('hgdp.', c('zip', 'txt', 'gds'))),
-  zippaths = paste0('hgdp/', c('HGDP_FinalReport_Forward.txt', 'HGDP_Map.txt'))
-  ) {
-  setup_temp_dir()
-  txts_paths <- utils::unzip(paths[1], zippaths, junkpaths = TRUE)
-  actg_gdata <- actg_tsv_to_gdata(txts_paths[1], paths[2],
-    c('scan_id', 'gender', 'population', 'geographic_origin', 'region'),
-    txts_paths[2])
-  file.remove(txts_paths)
-  save_genotype_data_as_gds(actg_gdata, paths[3], quiet = TRUE)
-  paths[3]
 }

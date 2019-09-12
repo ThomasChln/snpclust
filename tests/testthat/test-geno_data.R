@@ -1,5 +1,5 @@
 context('genotype data')
-setup_temp_dir()
+snpclust:::setup_temp_dir()
 
 test_actg_tsv_to_gdata  <- function() {
   paths <- system.file('extdata', paste0('hgdp.', c('zip', 'txt')),
@@ -51,23 +51,16 @@ test_actg_tsv_to_gdata  <- function() {
 test_that('Convert hgdp text files to gds', test_actg_tsv_to_gdata())
 
 
+gdspath <- SNPRelate::snpgdsExampleFileName()
+gdata <- snpclust:::load_gds_as_genotype_data(gdspath)
+
 test_bed_to_gds <- function() {
-  gdspath <- SNPRelate::snpgdsExampleFileName()
-  snpclust:::setup_temp_dir()
   names <- paste0('example_data', c('.gds', '_test.gds'))
 
   # tidy example file for plink: sex and pheno as 2 first slots of sample annot
   file.copy(gdspath, names[1])
-  snpclust:::.format_gds_for_BED2GDS(
-    names[1],
-    'sample.annot',
-    'sex',
-    'pop.group'
-  )
-
-  # gds -> gdata
-  gdata <- snpclust:::load_gds_as_genotype_data(gdspath)
-  on.exit(close(gdata))
+  snpclust:::.format_gds_for_BED2GDS(names[1], 'sample.annot', 'sex',
+    'pop.group')
 
   # gdata -> bed 
   snpclust:::save_genotype_data_as_plink(gdata, 'plink_test',
@@ -80,6 +73,7 @@ test_bed_to_gds <- function() {
   on.exit(close(gdata_test))
 
   # gdata == gdata 2
+  snpclust:::check_genotype_data(gdata_test)
 
   # geno and snp annot
   getters <- list(snpclust:::fetch_genotypes, getSnpID, getChromosome, getPosition,
@@ -101,4 +95,23 @@ test_bed_to_gds <- function() {
 }
 test_that('bed_to_gds', test_bed_to_gds())
 
+close(gdata)
 
+gds = snpclust:::save_hgdp_as_gds()
+gdata = snpclust:::load_gds_as_genotype_data(gds)
+on.exit(close(gdata))
+
+test_plink_merge <- function() {
+  library(magrittr)
+  gdata1 = snpclust:::genotype_data_subset(gdata, 1:10, 1:10)
+  snpclust:::save_genotype_data_as_gds(gdata1, 'tmp1.gds')
+  gdata2 = snpclust:::genotype_data_subset(gdata, 6:15, 1:10)
+  snpclust:::save_genotype_data_as_gds(gdata2, 'tmp2.gds')
+  snpclust:::snprelate_gds_to_bed('tmp1')
+  snpclust:::snprelate_gds_to_bed('tmp2')
+
+  lapply(c('tmp1', 'tmp2'), paste0, '.', c('bed', 'bim', 'fam')) %>%
+    snpclust:::plink_merge(., './', 'plink_merge') %>%
+    sapply(file.exists) %>% all %>% expect_true
+}
+test_that('plink_merge', test_plink_merge())
