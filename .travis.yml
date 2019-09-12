@@ -8,4 +8,4 @@ script:
   - docker run -w /snpclust thomaschln/snpclust make check
 
 after_success:
-  - docker run R -e 'install.packages('covr'); covr::codecov()'
+  - docker run  -w /snpclust thomaschln/snpclust R -e 'install.packages('covr'); covr::codecov()'
