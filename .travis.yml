@@ -1,11 +1,19 @@
-services:
-  - docker
+# from Rcpp
+
+os: linux
+dist: trusty
+services: docker
+
+env:
+  global:
+    - DOCKER_OPTS="--rm -w /snpclust"
+      DOCKER_CNTR="thomaschln/snpclust"
 
 install:
-  - docker pull thomaschln/snpclust
+  - docker pull ${DOCKER_CNTR}
 
 script:
-  - docker run -w /snpclust thomaschln/snpclust make check
+  - docker run ${DOCKER_OPTS} ${DOCKER_CNTR} make check
 
 after_success:
-  - docker run  -w /snpclust thomaschln/snpclust R -e "install.packages('covr'); covr::codecov()"
+  - docker run ${DOCKER_OPTS} -e CODECOV_TOKEN ${DOCKER_CNTR} ./codecov.sh

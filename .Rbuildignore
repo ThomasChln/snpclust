@@ -1,5 +1,6 @@
 .git
 .travis.yml
+codecov.sh
 docker-compose.yml
 Dockerfile
 Makefile
