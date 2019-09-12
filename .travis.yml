@@ -3,8 +3,10 @@ language: r
 services:
   - docker
 
-before_install:
+install:
   - docker pull thomaschln/snpclust
+
+script:
   - docker run thomaschln/snpclust make check
 
 r_packages:
