@@ -6,7 +6,7 @@ services: docker
 
 env:
   global:
-    - DOCKER_OPTS="--rm -w /snpclust"
+    - DOCKER_OPTS="--rm -v ./:/snpclust -w /snpclust"
       DOCKER_CNTR="thomaschln/snpclust"
 
 install:
