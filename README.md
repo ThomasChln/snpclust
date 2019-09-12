@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.org/thomaschln/snpclust.svg)](https://travis-ci.org/thomaschln/snpclust)
 [![Coverage status](https://codecov.io/gh/thomaschln/snpclust/branch/master/graph/badge.svg)](https://codecov.io/github/thomaschln/snpclust)
--->
 
 The R package **snpclust** performs unsupervised feature selection and summarization based on Principal Component Analysis, Gaussian Mixture Models, and Markov Chain Monte Carlo.
 

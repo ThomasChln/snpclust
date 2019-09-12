@@ -1,13 +1,11 @@
-language: r
-
 services:
   - docker
 
-before_install:
+install:
   - docker pull thomaschln/snpclust
 
-r_packages:
-  - covr
+script:
+  - docker run -w /snpclust thomaschln/snpclust make check
 
 after_success:
-  - Rscript -e 'library(covr); codecov()'
+  - docker run  -w /snpclust thomaschln/snpclust R -e "install.packages('covr'); covr::codecov()"
