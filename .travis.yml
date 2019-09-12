@@ -5,6 +5,7 @@ services:
 
 before_install:
   - docker pull thomaschln/snpclust
+  - docker run thomaschln/snpclust
 
 r_packages:
   - covr
