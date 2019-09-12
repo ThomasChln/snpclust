@@ -17,6 +17,19 @@ test_that('haplo_mcmc', test_haplo_mcmc())
 
 suppressMessages(HGDP_GDATA_QC <- snpclust:::snprelate_qc(hgdp_gdata))
 
+test_geno_block <- function() {
+  geno = snpclust:::fetch_genotypes(hgdp_gdata, 1:10, 1:10, char = TRUE)
+  expect_equal(dim(geno), c(10, 10))
+}
+test_that('geno_block', test_geno_block())
+
+test_ld_select <- function() {
+  ld = snpclust:::snprelate_ld_select(hgdp_gdata, snps_idx = 1:10,
+    scans_idx = 1:10, min_r2 = 0.8) 
+  expect_equal(length(ld$chr1), 9)
+}
+test_that('ld_select', test_ld_select())
+
 test_snprelate_qc <- function() {
   expect_equal(length(HGDP_GDATA_QC), 2)
   expect_identical(names(HGDP_GDATA_QC), c('gdata', 'df_qc'))

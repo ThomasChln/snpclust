@@ -301,48 +301,6 @@ get_pca_explained_var <- function (qb_pca) {
   df_explained_var
 }
 
-add_pca_sup_vars <- function(qb_pca, df_vars) {
-
-  die_unless(inherits(qb_pca, "qb_pca"),
-    "Not a qb_pca object")
-  check_fx_args(df_vars = "!D+")
-
-  # Check that identifier column is present in new data
-  die_unless(
-    df_columns_exist(df_vars, qb_pca@id_col, silent = TRUE),
-    "The additonal data must be a data.frame containing the column %s",
-    qb_pca@id_col
-  )
-
-  # Check that the ids are unique
-  die_if(any(duplicated(df_vars[, qb_pca@id_col])),
-    "The identifier column %s contains duplicate values",
-    qb_pca@id_col
-  )
-
-  # list new variables, omitting the ID
-  newvars <- colnames(df_vars)[-match(qb_pca@id_col, colnames(df_vars))]
-
-  # extract the data from the pca
-  df_original <- qb_pca@data
-
-  # check for duplicated columns
-  idxdp <- newvars %in% colnames(df_original)
-  die_if(any(idxdp), "Duplicated columns in new data: %s",
-    newvars[idxdp])
-
-  # perform left join with new data. This preserves the original data
-  df_added <- dplyr::left_join(df_original, df_vars, by = qb_pca@id_col)
-  # update qb_pca object
-  qb_pca@data <- df_added
-  qb_pca@vars_sup <- c(qb_pca@vars_sup, newvars)
-
-  qb_pca
-
-}
-
-
-
 setOldClass("prcomp")
 
 setClass("qb_pca",

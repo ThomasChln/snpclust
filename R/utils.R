@@ -4,73 +4,6 @@ if (getRversion() >= "2.15.1") {
     utils::globalVariables()
 }
 
-.import_gds <- function(geno, snps) {
-  l_geno <- strsplit(geno, '\t')
-
-  ## scan ids
-  scans <- as.data.frame(t(sapply(l_geno, '[', c(2, 5:6))))
-  colnames(scans) <- c('db_id', 'sex_fam', 'phenotype')
-  stopifnot(!any(duplicated(scans$db_id)))
-  scans$scanID <- 1:nrow(scans)
-
-  ## snp ids
-  colnames(snps) <- c('chromosome', 'probe_id', 'morgan', 'position')
-  stopifnot(!any(duplicated(snps$V2)))
-
-  ## genotype
-  df_geno <- as.data.frame(lapply(l_geno, '[', -(1:6)))
-  m_geno <- apply(df_geno, 1, function(i) as.numeric(factor(i, exclude = '0 0')))
-  lvls <- apply(df_geno, 1, function(i) levels(factor(i, exclude = '0 0')))
-
-  counts <- apply(m_geno, 2, tabulate, 3)
-
-  # Set major allele to 0
-  revs <- apply(counts, 2, function(i) i[3] > i[1])
-  m_geno[, revs] <- 4L - m_geno[, revs]
-
-  # Set homozygote to 0 in binaries
-  bins <- which(!apply(counts, 2, `[`, 3))
-  first_is_homo <- sapply(lvls[bins], function(i) do.call(all.equal, as.list(strsplit(i[1], ' ')[[1]])))
-  revs <- bins[which(first_is_homo != 'TRUE')]
-  m_geno[, revs] <- 3L - m_geno[, revs]
-
-  # Set indels to NA
-  indels <- grep('D|I', df_geno[[1]])
-  m_geno[, indels] <- NA
-
-  # Get alleles
-  lvls[revs] <- lapply(lvls[revs], rev)
-  alleles <- unlist(strsplit(sapply(lvls, '[', 2), ' '))
-  df_alleles <- as.data.frame(matrix(alleles, ncol = 2, byrow = TRUE))
-  df_alleles[indels, ] <- NA
-  df_alleles[1:2] <- lapply(df_alleles[1:2], factor)
-  colnames(df_alleles) <- paste0('allele', c('A', 'B'))
-  snps <- cbind(snps, df_alleles)
-
-  # Coerce genotype to integer
-  dims <- dim(m_geno)
-  m_geno <- as.integer(m_geno - 1)
-  dim(m_geno) <- dims 
-
-  list(geno = m_geno, scans = scans, snps = snps)
-}
-
-import_gds <- function(dirpath, gdsname) {
-  path <- grep('bed', list.files(dirpath, full.names = TRUE), value = TRUE)
-  system(paste('plink --noweb --bfile', gsub('.bed$', '', path),
-      '--recode --tab --out pedfile'))
-  on.exit(file.remove(paste0('pedfile.', c('ped', 'map', 'log'))))
-  geno <- readLines('pedfile.ped')
-  snps <- utils::read.table('pedfile.map')
-
-  l_gds <- .import_gds(geno, snps)
-
-  gdata <- build_gwastools(t(l_gds$geno), l_gds$scans, l_gds$snps)
-
-  if (!dir.exists('data/gds')) dir.create('data/gds')
-  save_genotype_data_as_gds(gdata, gdsname)
-}
-
 impute_bed <- function(paths, df_snp, l_peaks, scan_ids, out,
   impute = sample_impute) {
   paths %>% paste0('.', c('bed', 'bim', 'fam')) %>%
@@ -302,23 +235,6 @@ die_unless <- function(cond, format, ...) {
 
 
 die_if  <- function(cond, format, ...) die_unless(!cond, format, ...)
-
-
-df_columns_exist <- function(data_frame, cols, silent = FALSE) {
-
-  check_fx_args(cols = '!S+', data_frame = '!d+')
-
-  res <- all(cols %in% colnames(data_frame))
-
-  if (!silent && !res) {
-    cols_not_in_df <- setdiff(sort(cols), sort(colnames(data_frame)))
-    warning(sprintf('Column(s) "%s" not in dataframe',
-        paste(cols_not_in_df, collapse = ', ')))
-  }
-
-  res
-}
-
 
 catch_warnings <- function(expr) {
   ws <- list()
