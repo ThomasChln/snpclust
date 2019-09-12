@@ -7,7 +7,7 @@ install:
   - docker pull thomaschln/snpclust
 
 script:
-  - docker run thomaschln/snpclust make check
+  - docker run -w /snpclust thomaschln/snpclust make check
 
 r_packages:
   - covr
