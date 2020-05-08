@@ -4,10 +4,13 @@
 \alias{save_hgdp_as_gds}
 \title{save_hgdp_as_gds}
 \usage{
-save_hgdp_as_gds(paths = file.path(system.file("extdata", package =
-  "snpclust"), paste0("hgdp.", c("zip", "txt"))), outpath = "hgdp.gds",
-  zippaths = paste0("hgdp/", c("HGDP_FinalReport_Forward.txt",
-  "HGDP_Map.txt")), ...)
+save_hgdp_as_gds(
+  paths = file.path(system.file("extdata", package = "snpclust"), paste0("hgdp.",
+    c("zip", "txt"))),
+  outpath = "hgdp.gds",
+  zippaths = paste0("hgdp/", c("HGDP_FinalReport_Forward.txt", "HGDP_Map.txt")),
+  ...
+)
 }
 \arguments{
 \item{paths}{Paths of the zip, txt, and gds files}

@@ -186,7 +186,7 @@ plink_merge_beds <- function(l_paths, dir, outpath) {
   outpath <- file.path(dir, outpath)
   cmd_merge <- paste('--noweb --bfile', path,
     '--extract common_snps --merge-list file_list --make-bed --allow-no-sex',
-    '--missing-phenotype --out', outpath, '> /dev/null')
+    '--out', outpath, '> /dev/null')
   system2('plink', cmd_merge)
   c(path, cmd_merge)
 }

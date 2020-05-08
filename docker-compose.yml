@@ -2,7 +2,7 @@ version: '2'
 
 services:
   vignette:
-    image: snpclust
+    image: thomaschln/snpclust
     volumes:
       - ./:/snpclust
     working_dir: /snpclust/vignettes/

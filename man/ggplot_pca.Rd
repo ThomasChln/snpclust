@@ -4,10 +4,23 @@
 \alias{ggplot_pca}
 \title{Ggplot a qb_pca object}
 \usage{
-ggplot_pca(pca, group = NULL, axes = c(1, 2), obs = TRUE,
-  obs_sup = FALSE, vars = FALSE, vars_sup = FALSE,
-  pc_variance = TRUE, ellipses = FALSE, label = NULL, link = FALSE,
-  alpha_fill = FALSE, ellipses_ci = 0.95, nas_first = TRUE, ...)
+ggplot_pca(
+  pca,
+  group = NULL,
+  axes = c(1, 2),
+  obs = TRUE,
+  obs_sup = FALSE,
+  vars = FALSE,
+  vars_sup = FALSE,
+  pc_variance = TRUE,
+  ellipses = FALSE,
+  label = NULL,
+  link = FALSE,
+  alpha_fill = FALSE,
+  ellipses_ci = 0.95,
+  nas_first = TRUE,
+  ...
+)
 }
 \arguments{
 \item{pca}{pca or qb_pca object (which is fortified)}

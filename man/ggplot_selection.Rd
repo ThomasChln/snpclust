@@ -4,8 +4,15 @@
 \alias{ggplot_selection}
 \title{ggplot_selection}
 \usage{
-ggplot_selection(peaks, pca, axes = paste0("PC", 1:10), ncol = 5,
-  scales = "free_y", ..., n_points = 2000)
+ggplot_selection(
+  peaks,
+  pca,
+  axes = paste0("PC", 1:10),
+  ncol = 5,
+  scales = "free_y",
+  ...,
+  n_points = 2000
+)
 }
 \arguments{
 \item{peaks}{List returned by peak_selection}

@@ -25,7 +25,7 @@ test_that('geno_block', test_geno_block())
 
 test_ld_select <- function() {
   ld = snpclust:::snprelate_ld_select(hgdp_gdata, snps_idx = 1:10,
-    scans_idx = 1:10, min_r2 = 0.8) 
+    scans_idx = 1:10, min_r2 = 0.8, quiet = TRUE)
   expect_equal(length(ld$chr1), 9)
 }
 test_that('ld_select', test_ld_select())

@@ -111,7 +111,7 @@ test_plink_merge <- function() {
   snpclust:::snprelate_gds_to_bed('tmp2')
 
   lapply(c('tmp1', 'tmp2'), paste0, '.', c('bed', 'bim', 'fam')) %>%
-    snpclust:::plink_merge(., './', 'plink_merge') %>%
+    snpclust:::plink_merge(., '.', 'plink_merge') %>%
     sapply(file.exists) %>% all %>% expect_true
 }
 test_that('plink_merge', test_plink_merge())

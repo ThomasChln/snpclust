@@ -4,8 +4,16 @@
 \alias{snpclust}
 \title{snpclust}
 \usage{
-snpclust(paths, gds, subsets = "", n_axes = 100, n_cores = 1,
-  only_pca = FALSE, keep_tmp = FALSE, ...)
+snpclust(
+  paths,
+  gds,
+  subsets = "",
+  n_axes = 100,
+  n_cores = 1,
+  only_pca = FALSE,
+  keep_tmp = FALSE,
+  ...
+)
 }
 \arguments{
 \item{paths}{Paths of PLINK binary files.

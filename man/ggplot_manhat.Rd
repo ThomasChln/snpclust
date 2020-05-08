@@ -4,8 +4,15 @@
 \alias{ggplot_manhat}
 \title{ggplot_manhat}
 \usage{
-ggplot_manhat(pca, gdata, axes = paste0("PC", 1:10), byposition = TRUE,
-  n_points = 2000, ncol = 5, ...)
+ggplot_manhat(
+  pca,
+  gdata,
+  axes = paste0("PC", 1:10),
+  byposition = TRUE,
+  n_points = 2000,
+  ncol = 5,
+  ...
+)
 }
 \arguments{
 \item{pca}{PCA data frame, requires variable contributions}
