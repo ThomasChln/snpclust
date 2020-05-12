@@ -212,9 +212,9 @@ snprelate_ld_select <- function(gdata,
 }
 
 snps_hla <- function(gdata) {
-  location <- getSnpVariable(gdata, c('chromosome', 'position'))
-  in_hla <- location$chromosome == 6
-  in_hla <- in_hla & location$position > 25e6 & location$position < 35e6
+  df_snp = gdata_snps_annots(gdata)
+  in_hla <- df_snp$chromosome == 6
+  in_hla <- in_hla & df_snp$position > 25e6 & df_snp$position < 35e6
 }
 
 # Character vector for subsetting the dataset:

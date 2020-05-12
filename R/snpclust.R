@@ -113,8 +113,7 @@ snpclust_features <- function(snpclust_obj, gdata, paths, n_pcs, n_cores) {
   df_pca = snpclust_obj$pca
   df_vars <- subset(df_pca, DIMRED_VARTYPE == 'VAR')
   snp_ids <- gsub('VAR_', '', df_vars$DIMRED_VARNAME)
-  df_snp <- getSnpVariable(gdata, c('chromosome', 'position', 'probe_id'),
-    snp_ids)
+  df_snp = gdata_snps_annots(gdata, snp_ids)
   df_snp$probe_id <- as.character(df_snp$probe_id)
 
   # get peaks

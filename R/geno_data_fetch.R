@@ -1,9 +1,13 @@
-gdata_snps_annots = function(gdata) {
-  if (is.null(gdata@snpAnnot)) {
-    data.frame(snpID = GWASTools::getSnpID(gdata),
+gdata_snps_annots = function(gdata, snp_ids = NULL) {
+  df_snp = if (is.null(gdata@snpAnnot)) {
+    data.frame(probe_id = GWASTools::getSnpID(gdata),
       chromosome = GWASTools::getChromosome(gdata),
       position = GWASTools::getPosition(gdata))
   } else gdata@snpAnnot@data
+
+  if (is.null(snp_ids)) return(df_snp)
+
+  df_snp[match(snp_ids, df_snp$probe_id), ]
 }
 
 gdata_scans_annots = function(gdata) {

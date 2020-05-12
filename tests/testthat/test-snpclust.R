@@ -47,6 +47,10 @@ close(hgdp_gdata)
 snpclust_object <- snpclust::snpclust(gds = gds, n_axes = 3)
 test_snpclust <- function() {
   expect_true(length(snpclust_object) == 8)
+
+  gds = SNPRelate::snpgdsExampleFileName()
+  #snpclust_object <- snpclust::snpclust(gds = gds, n_axes = 3)
+  #expect_true(length(snpclust_object) == 8)
 }
 test_that('snpclust', test_snpclust())
 
