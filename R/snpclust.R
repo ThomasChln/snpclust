@@ -126,8 +126,11 @@ snpclust_features <- function(snpclust_obj, gdata, paths, n_pcs, n_cores) {
   df_obs <- subset(df_pca, DIMRED_VARTYPE == 'OBS')
   scan_ids <- as.numeric(gsub('OBS_', '', df_obs$DIMRED_VARNAME))
   tmpfile = tempfile()
+  gdata_scan_ids = GWASTools::getScanID(gdata)
+  if (!is.integer(gdata_scan_ids)) gdata_scan_ids %<>% seq_along
+
   impute_bed(paths, df_snp, l_peaks,
-     match(scan_ids, GWASTools::getScanID(gdata)), tmpfile)
+     match(scan_ids, gdata_scan_ids), tmpfile)
   l_haplo <- .estimate_haplotypes(l_peaks, n_cores, df_snp, tmpfile)
   l_haplo <- .add_SNPs(l_haplo, df_vars, gdata, scan_ids)
 
