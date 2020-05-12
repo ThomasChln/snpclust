@@ -1,8 +1,27 @@
+gdata_snps_annots = function(gdata) {
+  if (is.null(gdata@snpAnnot)) {
+    data.frame(snpID = GWASTools::getSnpID(gdata),
+      chromosome = GWASTools::getChromosome(gdata),
+      position = GWASTools::getPosition(gdata))
+  } else gdata@snpAnnot@data
+}
+
+gdata_scans_annots = function(gdata) {
+  if (is.null(gdata@scanAnnot)) {
+    scan_ids = GWASTools::getScanID(gdata)
+    if (!is.integer(scan_ids)) scan_ids = seq_along(scan_ids)
+    data.frame(scanID = scan_ids)
+  } else gdata@scanAnnot@data
+}
+
 genotype_data_subset <- function(gdata, snps_idxs, scans_idxs) {
+
   qced_geno <- fetch_genotypes(gdata)[snps_idxs, scans_idxs]
-  qced_scans <- gdata@scanAnnot@data[scans_idxs, ]
-  qced_snps <- gdata@snpAnnot@data[snps_idxs, ]
-  qced_gdata <- build_gwastools(qced_geno, qced_scans, qced_snps)
+  df_scans = gdata_scans_annots(gdata)
+
+  df_snps = gdata_snps_annots(gdata)
+  build_gwastools(qced_geno, df_scans[scans_idxs, , drop = FALSE],
+    df_snps[snps_idxs, ])
 }
 
 

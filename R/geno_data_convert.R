@@ -8,7 +8,7 @@ gds_to_bed <- function(gds) {
   on.exit(close(gdata))
   bim <- paste0(name, '.bim')
   df_snps <- utils::read.table(bim, sep = '\t')
-  df_snps[[2]] <- gdata@snpAnnot@data$probe_id 
+  df_snps[[2]] <- gdata_snps_annots(gdata)$probe_id 
   utils::write.table(df_snps, bim, sep = '\t',
     row.names = FALSE, col.names = FALSE, quote = FALSE)
 

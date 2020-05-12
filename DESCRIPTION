@@ -1,13 +1,12 @@
 Package: snpclust
-Title: Single Nucleotide Polymorphism Unsupervised Clustering
-Version: 0.2
-Author: Thomas Charlon <charlon@protonmail.com>, Karl Forner
-    <karl.forner@precisionformedicine.com>, Alessandro Di Cara <alessandro.dicara@precisionformedicine.com>,
-    Jerome Wojcik <jerome.wojcik@precisionformedicine.com>
-Maintainer: Thomas Charlon <charlon@protonmail.com>
-Description: Unsupervised feature selection based on Principal Component
-    Analysis and Gaussian Mixture Models developed for Systemic Autoimmune Diseases
-    in the PRECISESADS project.
+Title: SNP Feature Summarization for Unsupervised Clustering
+Version: 0.3
+Authors@R: c(
+  person("Thomas", "Charlon", role = c("aut", "cre"), email = "charlon@protonmail.com", comment = c(ORCID = "0000-0001-7497-0470")),
+  person("Karl", "Forner", role = "aut"),
+  person("Alessandro", "Di Cara", role = "aut"),
+  person("Jérôme", "Wojcik", role = "aut"))
+Description: SNPClust selects SNPs based on PCA contributions and summarizes nearby correlated SNPs by estimating haplotypes using the SHAPEIT software, in order to perform genome wide unsupervised clustering and enhance non-ancestry signals. It was developed to study systemic autoimmune diseases in the IMI PRECISESADS project.
 Imports:
     gdsfmt,
     ggplot2,

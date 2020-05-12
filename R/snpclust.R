@@ -1,85 +1,59 @@
 
 #' snpclust
 #'
-#' Snpclust performs unsupervised feature selection and summarization based on
-#' Principal Component Analysis, Gaussian Mixture Models, and Markov Chain
-#' Monte Carlo.
+#' SNPClust performs PCA-based SNP selection and haplotype summarization of
+#' nearby correlated SNPS in linear complexity using the SHAPEIT software.
+#' Features are then weighted by pricipal component rank and contributions.
 #'
-#' @param paths       Paths of PLINK binary files.
-#'                    If missing, files are generated with the gds file.
-#' @param gds         Path of Genomic Data Structure file 
-#' @param subsets     Character vector for subsetting the dataset.
-#'                    '' - no subset
-#'                    'hla' - use only SNPs in HLA 
-#'                    'non_hla' - use only SNPs outside HLA
-#'                    'no_controls' - exclude samples with value Control in
-#'                    phenotype 
-#' @param n_axes      Number of principal components to consider
-#' @param n_cores     Number of cores to use
-#' @param only_pca    Logical, compute only PCA and exit
-#' @param keep_tmp    Logical, keep temporary objects
-#' @param ...         Passed to snprelate_qc 
-#' @return List of slots: 
-#'           pca - PCA applied to the quality controlled dataset,
-#'           qc - details about the quality control applied,
-#'           gdata - GenotypeData object of the quality controlled dataset,
-#'           peaks - list of SNP IDs selected in each principal component,
-#'           features - matrix of SNPClust features before weighting,
-#'           and features_pca - PCA applied to the weighted SNPClust features.
-#'         If several subsets are provided, each slot will be a list with
-#'         slots corresponding to each subsets.
-#'
-#' @author tcharlon
+#' @param gds       Path of Genomic Data Structure file 
+#' @param bed_paths Paths of PLINK binary files.
+#'                  If missing, files are generated with the gds file.
+#' @param n_axes    Number of principal components to consider
+#' @param n_cores   Number of cores to use
+#' @param only_pca  Logical, compute only PCA and exit
+#' @param keep_tmp  Logical, keep temporary objects
+#' @param ...       Passed to snprelate_qc 
+#' @return List of slots:
+#'           gdata: GenotypeData object of the quality controlled gds,
+#'           qc: details about the quality control applied,
+#'           pca: PCA applied to the quality controlled gds,
+#'           peaks: list of SNP IDs selected in each principal component,
+#'           features: matrix of selected SNPs and estimated haplotypes,
+#'           features_pca: PCA applied to the features.
 #' @export
-snpclust <- function(paths, gds, subsets = '', n_axes = 1e2,
-  n_cores = 1, only_pca = FALSE, keep_tmp = FALSE, ...) {
+snpclust <- function(gds, bed_paths, n_axes = 1e2, n_cores = 1,
+  only_pca = FALSE, keep_tmp = FALSE, ...) {
 
-  if (missing(paths)) {
+  if (missing(bed_paths)) {
     paths <- gds_to_bed(normalizePath(gds))
     on.exit(file.remove(paths))
   }
 
-  # subset gdata, qc and pca
   gdata <- load_gds_as_genotype_data(gds)
   on.exit(close(gdata))
   if (!keep_tmp) setup_temp_dir()
 
-  pca_objs <- lapply(subsets, .snpclust_qc_pca, gdata, n_axes, n_cores, ...)
-  snpclust_obj <- list(pca = lapply(pca_objs, '[[', 'pca'),
-    qc = lapply(pca_objs, '[[', 'qc'), gdata = lapply(pca_objs, '[[', 'gdata'))
+  snpclust_obj = snprelate_qc(gdata, ...)
+  snpclust_obj$pca = snprelate_pca(snpclust_obj$gdata, n_axes, n_cores)
 
-  if (!only_pca) {
-    # haplotypes estimation, merging and weighting by PC rank & contributions
-    haplos <- lapply(snpclust_obj$pca, .snpclust_features, gdata, paths,
-      n_axes, n_cores)
-    snpclust_obj$peaks <- lapply(haplos, attr, 'peaks')
-    snpclust_obj$max_contributor <- lapply(haplos, attr, 'max_contributor')
-    snpclust_obj$features <- lapply(haplos, .haplo_features, n_cores)
-    snpclust_obj$features <- lapply(seq_along(subsets), .haplo_weights,
-      snpclust_obj)
-    snpclust_obj$features_qc <- lapply(seq_along(subsets), features_qc,
-      snpclust_obj)
-    snpclust_obj$features_pca <- lapply(seq_along(subsets), get_features_pca,
-      snpclust_obj)
-  }
+  if (only_pca) return(snpclust_obj)
 
-  # unlist slots if only one subsets 
-  if (length(subsets) == 1) snpclust_obj <- lapply(snpclust_obj, '[[', 1)
+  haplos <- snpclust_features(snpclust_obj, gdata, paths, n_axes, n_cores)
+  snpclust_obj$peaks <- attr(haplos, 'peaks')
+  snpclust_obj$max_contributor <- attr(haplos, 'max_contributor')
+
+  snpclust_obj$features <- .haplo_features(haplos, n_cores) 
+  snpclust_obj$features <- .haplo_weights(snpclust_obj)
+
+  snpclust_obj$features_qc <- features_qc(snpclust_obj)
+  snpclust_obj$features_pca <- get_features_pca(snpclust_obj)
 
   snpclust_obj
 }
 
-.snpclust_qc_pca <- function(subset, gdata, n_axes, n_cores, ...) {
-  gdata <- .genotype_data_subset(subset, gdata)
-  qced_gdata <- snprelate_qc(gdata, ...)
-  pca <- snprelate_pca(qced_gdata$gdata, n_axes, n_cores)
-  list(pca = pca, qc = qced_gdata$df_qc, gdata = qced_gdata$gdata)
-} 
-
-features_qc <- function(idx, snpclust_obj, weighted = FALSE) {
-  m_feats <- snpclust_obj$features[[idx]]
-  
-  m_feats <- as.matrix(m_feats)
+# perform quick QC of snpclust features
+features_qc <- function(snpclust_obj, weighted = FALSE) {
+  m_feats <- as.matrix(snpclust_obj$features)
   polymorphs <- get_polymorphic_cols(m_feats)
   m_feats <- m_feats[, polymorphs]
 
@@ -92,17 +66,19 @@ features_qc <- function(idx, snpclust_obj, weighted = FALSE) {
   m_feats <- transitive_tagsnp(sample_impute(m_feats))
 }
 
-get_features_pca <- function(idx, snpclust_obj) {
-  m_feats <- snpclust_obj$features_qc[[idx]]
-  gdata <- snpclust_obj$gdata[[idx]]
-  obs_ids <- match(getScanID(gdata), gdata@scanAnnot@data$scanID)
-  df_feats <- cbind.data.frame(m_feats, id = paste(1:nrow(m_feats)),
-    # add observation annotations
-    gdata@scanAnnot@data[obs_ids, ], stringsAsFactors = FALSE)
+get_features_pca <- function(snpclust_obj) {
+  m_feats <- snpclust_obj$features_qc
+  gdata <- snpclust_obj$gdata
+
+  # add observation annotations
+  df_scans_annots = gdata_scans_annots(gdata)
+  obs_ids <- match(getScanID(gdata), df_scans_annots$scanID)
+  df_feats <- cbind.data.frame(m_feats, id = as.character(getScanID(gdata)),
+    df_scans_annots[obs_ids, ], stringsAsFactors = FALSE)
+
   pca_fortify(get_pca(df_feats, 'id', vars = colnames(m_feats)))
 }
 
-###############################################################################
 transitive_tagsnp <- function(m_data, r2 = .8) {
   vars_info <- strsplit(tolower(colnames(m_data)), 'chr_|.loc_|_mb')
   chrs <- sapply(vars_info, '[', 2)
@@ -133,7 +109,8 @@ transitive_tagsnp <- function(m_data, r2 = .8) {
   m_data[, col_idx, drop = FALSE]
 }
 
-.snpclust_features <- function(df_pca, gdata, paths, n_pcs, n_cores) {
+snpclust_features <- function(snpclust_obj, gdata, paths, n_pcs, n_cores) {
+  df_pca = snpclust_obj$pca
   df_vars <- subset(df_pca, DIMRED_VARTYPE == 'VAR')
   snp_ids <- gsub('VAR_', '', df_vars$DIMRED_VARNAME)
   df_snp <- getSnpVariable(gdata, c('chromosome', 'position', 'probe_id'),
@@ -167,10 +144,10 @@ transitive_tagsnp <- function(m_data, r2 = .8) {
   l_haplo
 }
 
-# contribution and variance pondering
-.haplo_weights <- function(run, tables) {
-  feats <- tables$features[[run]]
-  pca <- tables$pca[[run]]
+# contribution and variance weighting
+.haplo_weights <- function(snpclust_obj) {
+  feats <- snpclust_obj$features
+  pca <- snpclust_obj$pca
   pcs <- sapply(strsplit(names(feats), '[.]'), '[', 1)
   pcs_n <- as.numeric(sapply(strsplit(pcs, 'PC'), '[', 2))
   contribs <- attr(feats, 'contribs')

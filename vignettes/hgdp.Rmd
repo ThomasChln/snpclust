@@ -13,9 +13,8 @@ output:
 
 SNPClust is demonstrated here on a small subset of the human genome diversity project dataset: 157 European samples out of 940 and 5,000 SNPs out of 660,918.
 
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE}
 library(snpclust)
-library(magrittr)
 ```
 
 The files are first converted to the snpgds format (cf. R package SNPRelate).

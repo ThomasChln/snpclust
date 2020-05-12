@@ -32,7 +32,7 @@ test_that('ld_select', test_ld_select())
 
 test_snprelate_qc <- function() {
   expect_equal(length(HGDP_GDATA_QC), 2)
-  expect_identical(names(HGDP_GDATA_QC), c('gdata', 'df_qc'))
+  expect_identical(names(HGDP_GDATA_QC), c('gdata', 'qc'))
   expect_is(HGDP_GDATA_QC$gdata, 'GenotypeData')
 }
 test_that('snprelate_qc', test_snprelate_qc())

@@ -5,9 +5,8 @@
 \title{snpclust}
 \usage{
 snpclust(
-  paths,
   gds,
-  subsets = "",
+  bed_paths,
   n_axes = 100,
   n_cores = 1,
   only_pca = FALSE,
@@ -16,17 +15,10 @@ snpclust(
 )
 }
 \arguments{
-\item{paths}{Paths of PLINK binary files.
-If missing, files are generated with the gds file.}
-
 \item{gds}{Path of Genomic Data Structure file}
 
-\item{subsets}{Character vector for subsetting the dataset.
-'' - no subset
-'hla' - use only SNPs in HLA 
-'non_hla' - use only SNPs outside HLA
-'no_controls' - exclude samples with value Control in
-phenotype}
+\item{bed_paths}{Paths of PLINK binary files.
+If missing, files are generated with the gds file.}
 
 \item{n_axes}{Number of principal components to consider}
 
@@ -39,21 +31,16 @@ phenotype}
 \item{...}{Passed to snprelate_qc}
 }
 \value{
-List of slots: 
-          pca - PCA applied to the quality controlled dataset,
-          qc - details about the quality control applied,
-          gdata - GenotypeData object of the quality controlled dataset,
-          peaks - list of SNP IDs selected in each principal component,
-          features - matrix of SNPClust features before weighting,
-          and features_pca - PCA applied to the weighted SNPClust features.
-        If several subsets are provided, each slot will be a list with
-        slots corresponding to each subsets.
+List of slots:
+          gdata: GenotypeData object of the quality controlled gds,
+          qc: details about the quality control applied,
+          pca: PCA applied to the quality controlled gds,
+          peaks: list of SNP IDs selected in each principal component,
+          features: matrix of selected SNPs and estimated haplotypes,
+          features_pca: PCA applied to the features.
 }
 \description{
-Snpclust performs unsupervised feature selection and summarization based on
-Principal Component Analysis, Gaussian Mixture Models, and Markov Chain
-Monte Carlo.
-}
-\author{
-tcharlon
+SNPClust performs PCA-based SNP selection and haplotype summarization of
+nearby correlated SNPS in linear complexity using the SHAPEIT software.
+Features are then weighted by pricipal component rank and contributions.
 }

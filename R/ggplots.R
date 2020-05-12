@@ -70,7 +70,7 @@ ggplot_manhat <- function(pca, gdata, axes = paste0('PC', 1:10),
   df_vars <- subset(pca, DIMRED_VARTYPE == 'VAR')
   ids <- as.numeric(gsub('VAR_', '', df_vars$DIMRED_VARNAME))
   snpvars <- c('chromosome', 'position', 'probe_id')
-  df_snps <- gdata@snpAnnot@data
+  df_snps <- gdata_snps_annots(gdata)
   df_snps <- df_snps[match(ids, df_snps$snpID), snpvars]
   if (!byposition) df_snps$position <- seq_along(df_snps$position)
   seq_size <- seq_len(min(n_points, nrow(df_vars)))
