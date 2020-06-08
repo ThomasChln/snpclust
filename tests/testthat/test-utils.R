@@ -29,7 +29,6 @@ test_that('merge_dfs', test_merge_dfs())
   two <- mtcars[11:14, ]
 
   expected <- mtcars[c(1:4, 11:14), ]
-  rownames(expected) <- NULL
 
   expect_identical(df_rbind_all(one, two), expected)
   expect_is(df_rbind_all(one, two, one), "data.frame")
@@ -53,12 +52,12 @@ test_that('merge_dfs', test_merge_dfs())
   ### different levels
   df2 <- data.frame(x = as.factor(letters[3:4]))
   df <- df_rbind_all(df1, df2)
-  expect_false(is.factor(df$x))
+  expect_true(is.factor(df$x))
 
   ### included levels
   df3 <- data.frame(x = as.factor(letters[2]))
   df <- df_rbind_all(df1, df3)
-  expect_false(is.factor(df$x))
+  expect_true(is.factor(df$x))
 }
 test_that('df_rbind_all', .df_rbind_all())
 

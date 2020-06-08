@@ -210,7 +210,7 @@ ggplot_pca    <- function(pca,
       'suppl. observations'))
 
   if (length(all_obs)) {
-    df_all_obs <- dplyr::filter(pca, DIMRED_VARNAME %in% all_obs)
+    df_all_obs <- subset(pca, DIMRED_VARNAME %in% all_obs)
     aes_param <- list(group = group, color = group, shape = 'DIMRED_VARTYPE')
     if (alpha_fill) {
       aes_param$alpha <- 'DIMRED_VARTYPE'
@@ -291,7 +291,7 @@ reorder_pca <- function(df_all_obs, nas_first, groups) {
 create_pca_axis_labels <- function(pca, pc_variance = TRUE, axes,
   names_axe = paste0("PC", axes)) {
 
-  exp_var   <- dplyr::filter(pca, DIMRED_VARNAME == 'Explained_variance')
+  exp_var   <- subset(pca, DIMRED_VARNAME == 'Explained_variance')
   axis_labs <- if (pc_variance && nrow(exp_var)) {
       paste0(names_axe, ' (', round(exp_var[axes] * 100, 1), '% explained variance)')
     } else {
@@ -359,7 +359,7 @@ scale_pca_vars <- function(df_all_vars, names_axe, scale_sdev = FALSE, scale = 1
 
   df_all_vars  <- dplyr::select(df_all_vars,
     c("DIMRED_VARNAME", "DIMRED_VARTYPE", names_axe)) %>%
-    dplyr::filter(DIMRED_VARTYPE != 'OTHER')
+    subset(DIMRED_VARTYPE != 'OTHER')
 
   df_all_vars
 }

@@ -63,8 +63,8 @@ test_bed_to_gds <- function() {
     'pop.group')
 
   # gdata -> bed 
-  snpclust:::save_genotype_data_as_plink(gdata, 'plink_test',
-    verbose = FALSE)
+  suppressWarnings(snpclust:::save_genotype_data_as_plink(gdata, 'plink_test',
+    verbose = FALSE))
 
   # bed  -> gdata 2
   snpclust:::bed_to_gds(paste0('plink_test.', c('bed', 'bim', 'fam')),
