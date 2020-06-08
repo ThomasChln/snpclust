@@ -170,7 +170,8 @@ snpclust_features <- function(snpclust_obj, gdata, paths, n_pcs, n_cores) {
   snps_ids <- gsub('VAR_', '', df_vars$DIMRED_VARNAME[unlist(l_haplo[snps_idxs])])
   m_geno <- t(fetch_genotypes(gdata))
   m_geno <- m_geno[, match(snps_ids, getSnpID(gdata))]
-  m_geno <- m_geno[match(scan_ids, getScanID(gdata)), ]
+  df_scans_annots = gdata_scans_annots(gdata)
+  m_geno <- m_geno[match(scan_ids, df_scans_annots$scanID), ]
   l_haplo[snps_idxs] <- as.data.frame(m_geno)
   names(l_haplo)[snps_idxs] <- paste0(names(l_haplo)[snps_idxs], '.', snps_ids)
 
