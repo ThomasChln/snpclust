@@ -30,7 +30,7 @@ SNPClust was developed to reclassify systemic autoimmune diseases (SADs) based o
 
 It was applied to a genome wide dataset of 379,190 SNPs from 4,212 systemic lupus erythematosus (SLE) patients and 1,221 healthy controls and results were published in PLOS ONE: [Single Nucleotide Polymorphism Clustering in Systemic Autoimmune Diseases](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0160270)
 
-It was also used to reproduce the Human Genome Diversity Panel PCA of 300,000 SNPs of 1,000 samples [https://f1000research.com/articles/6-278/v1].
+It was also used to reproduce the Human Genome Diversity Panel PCA of 300,000 SNPs of 1,000 samples [Replication of the principal component analyses of the human genome diversity panel](https://f1000research.com/articles/6-278/v1).
 
 ## Usage
 
